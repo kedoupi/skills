@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kedoupi/skills-incubator/schema/skill-repo.schema.json",
+  "title": "Kedoupi Skill Repo (baseline)",
+  "description": "Machine-checkable subset of schema/skill-repo.md. Evolves when external schemas are folded in.",
+  "type": "object",
+  "required": ["name", "package"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]{1,2}$",
+      "description": "Kebab-case skill name; matches skills/<name>/"
+    },
+    "package": {
+      "type": "object",
+      "required": ["skill_md", "scripts"],
+      "properties": {
+        "skill_md": {
+          "type": "object",
+          "required": ["name", "description", "version"],
+          "properties": {
+            "name": { "type": "string" },
+            "description": {
+              "type": "string",
+              "minLength": 20,
+              "description": "Must include trigger phrases for auto-invoke"
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$"
+            },
+            "author": { "type": "string" },
+            "requires_bins": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "scripts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Executable paths relative to skills/<name>/"
+        },
+        "has_config_example": { "type": "boolean" },
+        "has_templates": { "type": "boolean" }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "properties": {
+        "has_readme_en": { "type": "boolean" },
+        "has_readme_zh": { "type": "boolean" },
+        "has_agents_md": { "type": "boolean" },
+        "has_license": { "type": "boolean" },
+        "has_tests": { "type": "boolean" },
+        "has_ci": { "type": "boolean" }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "properties": {
+        "durable_config_outside_package": { "const": true },
+        "dry_run_offline": { "const": true },
+        "pwd_p_path_resolution": { "const": true },
+        "no_hardcoded_secrets": { "const": true }
+      }
+    }
+  }
+}
