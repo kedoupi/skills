@@ -1,0 +1,3 @@
+[submodule "lark-push-skill"]
+	path = lark-push-skill
+	url = git@github.com:kedoupi/lark-push-skill.git
