@@ -37,6 +37,14 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 - [ ] `npx skills add kedoupi/<name>-skill --list`
 - [ ] Parent pointer + README catalog
 
+## Incubator health
+
+```bash
+bash scripts/list-skills
+bash scripts/doctor
+bash scripts/link-agent-skills   # optional
+```
+
 ## Reserved top-level (not product skills)
 
 `_template`, `schema`, `scripts`, `.agents`, and other tooling dirs.

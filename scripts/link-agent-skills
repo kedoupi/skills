@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Symlink project meta skill into vendor skill dirs for Claude / Grok discovery.
+set -euo pipefail
+
+INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+SRC_REL="../../.agents/skills/skill-incubator"
+SRC_ABS="${INCUBATOR_ROOT}/.agents/skills/skill-incubator"
+
+if [[ ! -f "${SRC_ABS}/SKILL.md" ]]; then
+  echo "Missing meta skill: ${SRC_ABS}/SKILL.md" >&2
+  exit 1
+fi
+
+link_one() {
+  local dest_dir="$1"
+  local link_path="${dest_dir}/skill-incubator"
+  mkdir -p "$dest_dir"
+  if [[ -L "$link_path" || -e "$link_path" ]]; then
+    if [[ -L "$link_path" ]]; then
+      rm -f "$link_path"
+    else
+      echo "Refusing to overwrite non-symlink: $link_path" >&2
+      return 1
+    fi
+  fi
+  # relative link from dest_dir
+  ln -sfn "$SRC_REL" "$link_path"
+  echo "linked $link_path -> $SRC_REL"
+}
+
+link_one "${INCUBATOR_ROOT}/.claude/skills"
+link_one "${INCUBATOR_ROOT}/.grok/skills"
+
+echo "Done. Meta skill remains only at .agents/skills/skill-incubator/ (single source)."

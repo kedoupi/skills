@@ -13,5 +13,5 @@ Claude Code project adapter for this **skill incubator**.
   `.agents/skills/skill-incubator/SKILL.md` (not a published package).
 - Parent GitHub: `kedoupi/skills` (submodules). Child repos: `kedoupi/<name>-skill`.
 - When editing a skill submodule, also load that repo’s `AGENTS.md`
-  (e.g. `lark-push/AGENTS.md` or `*-skill/AGENTS.md`) — deeper rules win.
+  (e.g. `lark-push-skill/AGENTS.md`) — deeper rules win.
 - Do not reintroduce full project conventions here; update `AGENTS.md` instead.

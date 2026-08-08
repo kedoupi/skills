@@ -48,6 +48,9 @@ idea
 | [`_template/`](./_template/) | Product skill skeleton |
 | [`scripts/new-skill.sh`](./scripts/new-skill.sh) | Scaffold `./<name>-skill/` |
 | [`scripts/register-submodule.sh`](./scripts/register-submodule.sh) | `git submodule add` helper |
+| [`scripts/list-skills`](./scripts/list-skills) | List product skill dirs / remotes |
+| [`scripts/doctor`](./scripts/doctor) | Incubator health check |
+| [`scripts/link-agent-skills`](./scripts/link-agent-skills) | Symlink meta skill for Claude/Grok |
 | [`.agents/skills/skill-incubator/`](./.agents/skills/skill-incubator/) | Meta skill: create / edit / release |
 | [`AGENTS.md`](./AGENTS.md) | Agent contract SoT |
 | [`CLAUDE.md`](./CLAUDE.md) | Thin Claude adapter |

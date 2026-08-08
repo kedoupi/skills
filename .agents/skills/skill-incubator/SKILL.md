@@ -10,7 +10,7 @@ description: >
   Not for end-user Feishu/Lark messaging (lark-push) and not for generic Grok-only
   ~/.grok skills.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Skill Incubator
@@ -54,7 +54,7 @@ Checklists: [references/checklist.md](./references/checklist.md).
 ### 2. Validate
 
 - Package name legal; reserved: `_template`, `schema`, `scripts`, `agents`, `docs`
-- Neither `<name>` nor `<name>-skill` top-level dir should already exist (except legacy)
+- Neither `<name>` nor `<name>-skill` top-level dir should already exist
 
 ### 3. Scaffold
 
@@ -119,31 +119,25 @@ Confirm before any push.
 
 1. Child: `bash tests/run.sh` green
 2. Version = tag `vX.Y.Z`; push tag on **child** remote
-3. `npx skills add kedoupi/<name>-skill --list` (or legacy remote)
+3. `npx skills add kedoupi/<name>-skill --list`
 4. Parent: submodule pointer + catalog version
 
 ## List & doctor
 
+Prefer scripts (deterministic):
+
 ```bash
-# product submodules / skill dirs (package SKILL.md present)
-for d in */; do
-  base="${d%/}"
-  pkg="${base%-skill}"
-  if [ -f "${d}skills/${pkg}/SKILL.md" ]; then
-    echo "product: ${base} (package ${pkg})"
-  elif [ -f "${d}skills/${base}/SKILL.md" ]; then
-    echo "product(legacy path): ${base}"
-  fi
-done
-git submodule status 2>/dev/null || true
+bash scripts/list-skills
+bash scripts/doctor
+bash scripts/link-agent-skills   # optional Claude/Grok vendor symlinks
 ```
 
 | Check | Expect |
 | --- | --- |
 | Parent git | `kedoupi/skills` |
-| Schema / template / new-skill.sh | present |
+| Schema / template / scripts | present + executable |
 | Meta skill | `.agents/skills/skill-incubator/SKILL.md` |
-| New product | dir ends with `-skill`, package under `skills/<name>/` |
+| Product | dir ends with `-skill`, package under `skills/<name>/` |
 
 ## Safety
 
@@ -162,5 +156,6 @@ git submodule status 2>/dev/null || true
 
 - `schema/skill-repo.md`
 - `scripts/new-skill.sh`, `scripts/register-submodule.sh`
+- `scripts/list-skills`, `scripts/doctor`, `scripts/link-agent-skills`
 - `references/checklist.md`
 - root `AGENTS.md`

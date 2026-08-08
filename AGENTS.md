@@ -69,9 +69,9 @@ Triggers: 新建 skill / scaffold / 改 skill / bump / release / 孵化器.
 Optional discovery for agents that only scan vendor dirs (symlink, do not copy):
 
 ```bash
-mkdir -p .claude/skills .grok/skills
-ln -sfn ../../.agents/skills/skill-incubator .claude/skills/skill-incubator
-ln -sfn ../../.agents/skills/skill-incubator .grok/skills/skill-incubator
+bash scripts/link-agent-skills
+# creates .claude/skills/skill-incubator and .grok/skills/skill-incubator
+# → ../../.agents/skills/skill-incubator
 ```
 
 ## Creating a new skill
@@ -98,7 +98,7 @@ Prefer **skill-incubator → New skill**. Short form:
 
 ## Editing an existing skill
 
-1. `cd` into the submodule dir (`<name>-skill/` or legacy `lark-push/`).
+1. `cd` into the submodule dir (`<name>-skill/`, e.g. `lark-push-skill/`).
 2. Read that repo’s `AGENTS.md` + package `SKILL.md`.
 3. Behavior change → bump `metadata.version`; docs-only → no bump.
 4. Commit/push **inside the child**; then in parent:
@@ -107,6 +107,15 @@ Prefer **skill-incubator → New skill**. Short form:
    git add <name>-skill
    git commit -m "chore: bump <name>-skill submodule"
    ```
+
+Inventory / health:
+
+```bash
+bash scripts/list-skills
+bash scripts/doctor
+# optional: Claude/Grok vendor discovery
+bash scripts/link-agent-skills
+```
 
 ## Release (per product skill)
 

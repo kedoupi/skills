@@ -19,6 +19,9 @@
 __pycache__/
 *.pyc
 
-# Optional local vendor skill symlinks (recreate via AGENTS.md)
-# .claude/skills/
-# .grok/skills/
+# Vendor skill dirs: we track only skill-incubator symlinks (see scripts/link-agent-skills).
+# Ignore any other local vendor clutter under these trees.
+.claude/skills/*
+!.claude/skills/skill-incubator
+.grok/skills/*
+!.grok/skills/skill-incubator

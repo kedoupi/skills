@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Health check for the Skills incubator parent repo.
+set -euo pipefail
+
+INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$INCUBATOR_ROOT"
+
+PASS=0
+FAIL=0
+WARN=0
+
+ok() { echo "  [OK]   $*"; PASS=$((PASS + 1)); }
+bad() { echo "  [FAIL] $*"; FAIL=$((FAIL + 1)); }
+warn() { echo "  [WARN] $*"; WARN=$((WARN + 1)); }
+
+echo "skill-incubator doctor"
+echo "root: $INCUBATOR_ROOT"
+echo
+
+echo "== core layout =="
+[[ -f schema/skill-repo.md ]] && ok "schema/skill-repo.md" || bad "schema/skill-repo.md missing"
+[[ -f _template/skills/_your-skill_/SKILL.md ]] && ok "_template package skeleton" || bad "_template missing"
+[[ -x scripts/new-skill.sh ]] && ok "scripts/new-skill.sh" || bad "scripts/new-skill.sh missing/not executable"
+[[ -x scripts/register-submodule.sh ]] && ok "scripts/register-submodule.sh" || bad "register-submodule.sh missing/not executable"
+[[ -x scripts/list-skills ]] && ok "scripts/list-skills" || bad "scripts/list-skills missing/not executable"
+[[ -f .agents/skills/skill-incubator/SKILL.md ]] && ok "meta skill skill-incubator" || bad "meta skill missing"
+[[ -f AGENTS.md ]] && ok "AGENTS.md" || bad "AGENTS.md missing"
+[[ -f CLAUDE.md ]] && ok "CLAUDE.md" || bad "CLAUDE.md missing"
+[[ -f README.md ]] && ok "README.md" || bad "README.md missing"
+
+echo
+echo "== parent git =="
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  ok "parent is a git repo"
+  if origin="$(git remote get-url origin 2>/dev/null)"; then
+    ok "origin: $origin"
+    if [[ "$origin" == *"/skills.git" || "$origin" == *"/skills" ]]; then
+      ok "origin looks like kedoupi/skills"
+    else
+      warn "origin is not clearly …/skills (got $origin)"
+    fi
+  else
+    warn "no origin remote (push parent when ready)"
+  fi
+  if [[ -f .gitmodules ]]; then
+    ok ".gitmodules present"
+  else
+    warn ".gitmodules missing (no submodules registered yet)"
+  fi
+else
+  bad "parent is not a git repo"
+fi
+
+echo
+echo "== vendor skill discovery (optional) =="
+meta_src=".agents/skills/skill-incubator"
+for link in .claude/skills/skill-incubator .grok/skills/skill-incubator; do
+  if [[ -L "$link" ]]; then
+    target="$(readlink "$link" 2>/dev/null || true)"
+    ok "symlink $link -> $target"
+  elif [[ -d "$link" ]]; then
+    warn "$link exists but is not a symlink (prefer ln -s to $meta_src)"
+  else
+    warn "$link missing (optional: bash scripts/link-agent-skills)"
+  fi
+done
+
+echo
+echo "== product skills =="
+product_n="$(bash scripts/list-skills 2>/dev/null | awk 'NR > 2 && $1 ~ /-skill$/ { c++ } END { print c+0 }')"
+if [[ "${product_n}" -gt 0 ]]; then
+  ok "${product_n} product skill dir(s) (*-skill)"
+else
+  warn "no *-skill product dirs listed"
+fi
+bash scripts/list-skills || true
+
+echo
+echo "== submodule pointers =="
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  if out="$(git submodule status 2>/dev/null)" && [[ -n "$out" ]]; then
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      flag="${line:0:1}"
+      rest="${line:1}"
+      path="$(printf '%s' "$rest" | awk '{print $2}')"
+      case "$flag" in
+        ' ') ok "submodule $path" ;;
+        '-') bad "submodule not initialized: $path (git submodule update --init)" ;;
+        '+') warn "submodule $path commit differs from parent pointer" ;;
+        'U') bad "submodule conflict: $path" ;;
+        *) ok "submodule line: $line" ;;
+      esac
+    done <<<"$out"
+  else
+    warn "no git submodules"
+  fi
+fi
+
+echo
+echo "Results: ${PASS} ok, ${WARN} warn, ${FAIL} fail"
+if [[ "$FAIL" -gt 0 ]]; then
+  exit 1
+fi
+exit 0

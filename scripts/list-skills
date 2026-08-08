@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# List product skill submodules / dirs in the incubator.
+set -euo pipefail
+
+INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$INCUBATOR_ROOT"
+
+printf '%-28s %-20s %-10s %s\n' "DIR" "PACKAGE" "VERSION" "REMOTE"
+printf '%-28s %-20s %-10s %s\n' "---" "-------" "-------" "------"
+
+found=0
+for d in */; do
+  base="${d%/}"
+  case "$base" in
+    _template|schema|scripts|docs) continue ;;
+  esac
+
+  pkg=""
+  skill_md=""
+  if [[ "$base" == *-skill ]]; then
+    pkg="${base%-skill}"
+    skill_md="${d}skills/${pkg}/SKILL.md"
+  fi
+  # also accept package dir matching folder name (unusual)
+  if [[ ! -f "$skill_md" && -f "${d}skills/${base}/SKILL.md" ]]; then
+    pkg="$base"
+    skill_md="${d}skills/${base}/SKILL.md"
+  fi
+  [[ -f "$skill_md" ]] || continue
+
+  ver="?"
+  if ver_line="$(grep -E '^[[:space:]]*version:[[:space:]]*' "$skill_md" | head -1)"; then
+    ver="$(printf '%s' "$ver_line" | sed -E 's/.*version:[[:space:]]*["'\'']?([^"'\'']+)["'\'']?.*/\1/')"
+  fi
+
+  remote="(none)"
+  if [[ -d "${d}.git" || -f "${d}.git" ]]; then
+    remote="$(git -C "$d" remote get-url origin 2>/dev/null || echo '(no origin)')"
+  fi
+
+  printf '%-28s %-20s %-10s %s\n' "$base" "$pkg" "$ver" "$remote"
+  found=$((found + 1))
+done
+
+if [[ "$found" -eq 0 ]]; then
+  echo "(no product skills found)"
+  exit 0
+fi
+
+echo
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "submodules:"
+  git submodule status 2>/dev/null || echo "  (none)"
+fi
