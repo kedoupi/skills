@@ -31,7 +31,7 @@ that **author** product skills. **Not** published via `npx skills add`.
 5. Scaffold only via `bash scripts/new-skill.sh …` (do not hand-copy `_template`).
 6. Never ship this meta skill inside a product package.
 
-Legacy: directory `lark-push` / remote `kedoupi/lark-push` (no `-skill`) still valid.
+Example product: package `lark-push` in submodule dir `lark-push-skill` (`kedoupi/lark-push-skill`).
 
 Checklists: [references/checklist.md](./references/checklist.md).
 
@@ -90,7 +90,7 @@ Update parent `README.md` **Published skills** when going public.
 
 ### 1. Locate
 
-- Submodule path: `<name>-skill/` (or legacy `lark-push/`)
+- Submodule path: `<name>-skill/` (e.g. `lark-push-skill/`)
 - Read child `AGENTS.md` + `skills/<name>/SKILL.md`
 
 ### 2. Classify

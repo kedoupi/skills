@@ -33,8 +33,7 @@ npx skills add kedoupi/<name>-skill
 
 Authoring flows: meta skill `SKILL.md`. This file remains directory/contract SoT.
 
-**Legacy:** `lark-push` / `kedoupi/lark-push` predate the `-skill` suffix; keep
-working; new skills must use `<name>-skill`.
+**Example:** package `lark-push`, child repo `kedoupi/lark-push-skill`.
 
 ## Lifecycle
 

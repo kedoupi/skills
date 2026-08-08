@@ -31,8 +31,7 @@ Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
 If the user says a name already ending in `-skill`, that is the **repo dir**;
 the package name is the prefix without `-skill`.
 
-**Legacy:** `lark-push/` → remote `kedoupi/lark-push` (no `-skill` suffix yet).
-New skills must use `<name>-skill`. Optional later rename of legacy remotes.
+Existing product: package `lark-push`, repo/dir `lark-push-skill` → `kedoupi/lark-push-skill`.
 
 ## Layout
 

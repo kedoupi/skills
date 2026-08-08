@@ -81,10 +81,9 @@ bash scripts/register-submodule.sh my-feature-skill
 
 | Skill package | Version | Repo (child) | Install | Docs |
 | --- | --- | --- | --- | --- |
-| `lark-push` | `1.3.0` | [kedoupi/lark-push](https://github.com/kedoupi/lark-push) *(legacy name, no `-skill` suffix)* | `npx skills add kedoupi/lark-push` | [EN](https://github.com/kedoupi/lark-push#readme) · [中文](https://github.com/kedoupi/lark-push/blob/main/README.zh-CN.md) |
+| `lark-push` | `1.3.0` | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` | [EN](https://github.com/kedoupi/lark-push-skill#readme) · [中文](https://github.com/kedoupi/lark-push-skill/blob/main/README.zh-CN.md) |
 
-New skills should use the `xxxx-skill` repo naming. Legacy `lark-push` may be
-renamed to `lark-push-skill` later without changing the package name inside.
+Package name stays `lark-push`; GitHub/submodule directory is `lark-push-skill`.
 
 Each product skill is an independent public GitHub repository (submodule here)
 following [Agent Skills](https://agentskills.io/) and this incubator’s schema.
