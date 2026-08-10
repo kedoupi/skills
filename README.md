@@ -85,7 +85,7 @@ bash scripts/register-submodule.sh my-feature-skill
 | Skill package | Version | Repo (child) | Install | Docs |
 | --- | --- | --- | --- | --- |
 | `lark-push` | `1.3.0` | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` | [EN](https://github.com/kedoupi/lark-push-skill#readme) · [中文](https://github.com/kedoupi/lark-push-skill/blob/main/README.zh-CN.md) |
-| `tzai-image` | `0.1.0` | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `npx skills add kedoupi/tzai-image-skill` | [EN](https://github.com/kedoupi/tzai-image-skill#readme) · [中文](https://github.com/kedoupi/tzai-image-skill/blob/main/README.zh-CN.md) |
+| `tzai-image` | `0.1.1` | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `npx skills add kedoupi/tzai-image-skill` | [EN](https://github.com/kedoupi/tzai-image-skill#readme) · [中文](https://github.com/kedoupi/tzai-image-skill/blob/main/README.zh-CN.md) |
 
 Package name stays `lark-push`; GitHub/submodule directory is `lark-push-skill`.
 
