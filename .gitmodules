@@ -1,3 +1,6 @@
 [submodule "lark-push-skill"]
 	path = lark-push-skill
 	url = git@github.com:kedoupi/lark-push-skill.git
+[submodule "tzai-image-skill"]
+	path = tzai-image-skill
+	url = git@github.com:kedoupi/tzai-image-skill.git
