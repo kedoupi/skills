@@ -31,7 +31,14 @@ Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
 If the user says a name already ending in `-skill`, that is the **repo dir**;
 the package name is the prefix without `-skill`.
 
-Existing product: package `lark-push`, repo/dir `lark-push-skill` → `kedoupi/lark-push-skill`.
+Published products (keep in sync with root `README.md` catalog):
+
+| Package | Repo/dir | Install |
+| --- | --- | --- |
+| `lark-push` | `lark-push-skill` | `npx skills add kedoupi/lark-push-skill` |
+| `tzai-image` | `tzai-image-skill` | `npx skills add kedoupi/tzai-image-skill -g --all` |
+
+When releasing or first-publishing a product skill: bump child → register/bump submodule → **update root README catalog** → commit parent.
 
 ## Layout
 
