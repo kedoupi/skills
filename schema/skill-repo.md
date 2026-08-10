@@ -29,7 +29,7 @@ npx skills add kedoupi/<name>-skill
 | --- | --- | --- |
 | **Product skill** | `<name>-skill/skills/<name>/` (submodule child repo) | Yes (`npx skills add kedoupi/<name>-skill`) |
 | **Meta skill** | `.agents/skills/skill-incubator/` on parent | **No** |
-| **Parent** | `kedoupi/skills` | Not a skills.sh product; catalog + tooling |
+| **Parent** | `kedoupi/skills` | Not a skills.sh product; **catalog is SoT for published list** + tooling |
 
 Authoring flows: meta skill `SKILL.md`. This file remains directory/contract SoT.
 
@@ -45,8 +45,47 @@ idea / pain point
   → offline tests
   → create GitHub kedoupi/<name>-skill + push child
   → scripts/register-submodule.sh <name>-skill
-  → (optional) tag child + skills.sh + parent catalog
+  → tag child + skills.sh (optional)
+  → **MUST** update parent README catalog + AGENTS published list
+  → commit parent (submodule pointer + catalog)
 ```
+
+## Parent catalog (mandatory)
+
+The incubator root **`README.md` → Published skills** is the **public directory** of
+this monorepo. A skill that exists on disk / as a submodule but is missing or
+stale in the catalog is **incomplete**.
+
+### When catalog MUST be updated
+
+| Event | Catalog action |
+| --- | --- |
+| **Add** a product skill (first publish / first submodule) | New row + short blurb + install command |
+| **Behavior release** of a product skill (version bump users care about) | Update **Version** column (+ one-line if purpose changed) |
+| **Rename / retire** a product skill | Rename row or mark retired; do not leave orphan entries |
+| Docs-only tweak inside child | Catalog version optional (if version not bumped) |
+
+### What a catalog row needs
+
+| Field | Required |
+| --- | --- |
+| Package name (matches `SKILL.md` `name`) | yes |
+| Version (matches package `metadata.version`) | yes (for published) |
+| One-line purpose | yes |
+| Child repo link `kedoupi/<name>-skill` | yes |
+| Install command | yes |
+
+Also keep root **`AGENTS.md`** published-products table in sync (shorter form is fine).
+
+### Enforcement
+
+```bash
+bash scripts/doctor          # FAIL if disk *-skill missing from README catalog
+bash scripts/check-catalog   # catalog-only check (same rules)
+```
+
+Agents **must not** finish a release or “add skill” task without catalog + parent commit
+(unless user explicitly says private / no catalog).
 
 ## Directory contract
 

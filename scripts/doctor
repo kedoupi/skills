@@ -98,6 +98,30 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 echo
+echo "== parent catalog (README Published skills) =="
+if [[ -x scripts/check-catalog ]]; then
+  set +e
+  cat_out="$(bash scripts/check-catalog 2>&1)"
+  cat_rc=$?
+  set -e
+  # re-print check-catalog lines as doctor lines (skip header noise lightly)
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    case "$line" in
+      check-catalog*|root:*|Results:*|product\ skills\ checked:*) echo "  $line" ;;
+      \ \ \[OK\]*) ok "${line#*\[OK\]   }" ;;
+      \ \ \[FAIL\]*) bad "${line#*\[FAIL\] }" ;;
+      *) echo "  $line" ;;
+    esac
+  done <<<"$cat_out"
+  if [[ "$cat_rc" -ne 0 ]]; then
+    bad "catalog check failed (see scripts/check-catalog + schema/skill-repo.md § Parent catalog)"
+  fi
+else
+  bad "scripts/check-catalog missing or not executable"
+fi
+
+echo
 echo "Results: ${PASS} ok, ${WARN} warn, ${FAIL} fail"
 if [[ "$FAIL" -gt 0 ]]; then
   exit 1

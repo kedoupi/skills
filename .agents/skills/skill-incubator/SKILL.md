@@ -10,7 +10,7 @@ description: >
   Not for end-user Feishu/Lark messaging (lark-push) and not for generic Grok-only
   ~/.grok skills.
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Skill Incubator
@@ -82,9 +82,22 @@ bash scripts/register-submodule.sh <name>-skill
 git push origin main   # parent, after user approves
 ```
 
-### 6. Catalog
+### 6. Catalog (**mandatory**)
 
-Update parent `README.md` **Published skills** when going public.
+Parent root **`README.md` → Published skills** is the incubator **directory**.  
+Incomplete if the skill ships but is missing/stale there.
+
+```bash
+# after submodule register / first public release:
+# 1) add row: package | version | purpose | repo | install
+# 2) short install blurb if non-trivial
+# 3) sync AGENTS.md published-products table
+# 4) verify:
+bash scripts/check-catalog
+bash scripts/doctor
+```
+
+Schema SoT: `schema/skill-repo.md` § **Parent catalog**.
 
 ## Edit skill
 
@@ -97,8 +110,8 @@ Update parent `README.md` **Published skills** when going public.
 
 | Kind | Action |
 | --- | --- |
-| Behavior | Code + bump package `metadata.version` |
-| Docs only | No version bump |
+| Behavior | Code + bump package `metadata.version` + **catalog version** |
+| Docs only | No version bump; catalog optional |
 | Incubator-wide | `schema/` + `_template/` on **parent** |
 
 ### 3. Git (two repos)
@@ -107,20 +120,24 @@ Update parent `README.md` **Published skills** when going public.
 # inside child submodule
 git add … && git commit && git push
 
-# parent: bump pointer
+# parent: bump pointer + catalog when version/user-facing purpose changed
 cd <incubator-root>
-git add <name>-skill
-git commit -m "chore: bump <name>-skill submodule"
+git add <name>-skill README.md AGENTS.md
+git commit -m "chore: bump <name>-skill (+ catalog if needed)"
+bash scripts/check-catalog
 ```
 
 Confirm before any push.
 
 ## Release skill
 
-1. Child: `bash tests/run.sh` green
-2. Version = tag `vX.Y.Z`; push tag on **child** remote
-3. `npx skills add kedoupi/<name>-skill --list`
-4. Parent: submodule pointer + catalog version
+1. Child: `bash tests/run.sh` green  
+2. Version = tag `vX.Y.Z`; push tag on **child** remote  
+3. `npx skills add kedoupi/<name>-skill --list`  
+4. Parent: submodule pointer + **README catalog version** + AGENTS list  
+5. `bash scripts/check-catalog` green, then parent commit/push  
+
+**Do not** ship a release with only a submodule SHA bump and an outdated catalog.
 
 ## List & doctor
 
@@ -128,7 +145,8 @@ Prefer scripts (deterministic):
 
 ```bash
 bash scripts/list-skills
-bash scripts/doctor
+bash scripts/check-catalog   # package dir ↔ README version
+bash scripts/doctor          # includes catalog check
 bash scripts/link-agent-skills   # optional Claude/Grok vendor symlinks
 ```
 
@@ -138,6 +156,7 @@ bash scripts/link-agent-skills   # optional Claude/Grok vendor symlinks
 | Schema / template / scripts | present + executable |
 | Meta skill | `.agents/skills/skill-incubator/SKILL.md` |
 | Product | dir ends with `-skill`, package under `skills/<name>/` |
+| Catalog | every product package listed in README with matching version |
 
 ## Safety
 

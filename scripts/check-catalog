@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Verify incubator README catalog lists every product skill with matching version.
+# Exit 1 on mismatch. Used by scripts/doctor and CI.
+set -euo pipefail
+
+INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$INCUBATOR_ROOT"
+
+README="${INCUBATOR_ROOT}/README.md"
+if [[ ! -f "$README" ]]; then
+  echo "check-catalog: README.md missing" >&2
+  exit 1
+fi
+
+PASS=0
+FAIL=0
+ok() { echo "  [OK]   $*"; PASS=$((PASS + 1)); }
+bad() { echo "  [FAIL] $*"; FAIL=$((FAIL + 1)); }
+
+echo "check-catalog"
+echo "root: $INCUBATOR_ROOT"
+echo
+
+readme_has_package() {
+  local pkg="$1"
+  # package name as `pkg` in markdown (table / prose)
+  grep -qE '\`'"${pkg}"'\`' "$README"
+}
+
+readme_has_version_near_package() {
+  local pkg="$1" ver="$2"
+  # Same table row or nearby: look for pkg and version in README
+  # Prefer: line containing both `pkg` and `ver`
+  if grep -E '\`'"${pkg}"'\`' "$README" | grep -qF "${ver}"; then
+    return 0
+  fi
+  # fallback: version appears in a published-skills section line with pkg name
+  awk -v pkg="$pkg" -v ver="$ver" '
+    BEGIN { inpub=0 }
+    /^## Published skills/ { inpub=1; next }
+    /^## / && inpub && !/^## Published skills/ { inpub=0 }
+    inpub && index($0, pkg) && index($0, ver) { found=1 }
+    END { exit found ? 0 : 1 }
+  ' "$README"
+}
+
+found_skills=0
+for d in */; do
+  base="${d%/}"
+  [[ "$base" == *-skill ]] || continue
+  pkg="${base%-skill}"
+  skill_md="${d}skills/${pkg}/SKILL.md"
+  [[ -f "$skill_md" ]] || continue
+  found_skills=$((found_skills + 1))
+
+  ver="?"
+  if ver_line="$(grep -E '^[[:space:]]*version:[[:space:]]*' "$skill_md" | head -1)"; then
+    ver="$(printf '%s' "$ver_line" | sed -E 's/.*version:[[:space:]]*["'\'']?([^"'\'']+)["'\'']?.*/\1/')"
+  fi
+
+  if readme_has_package "$pkg"; then
+    ok "catalog lists package \`${pkg}\`"
+  else
+    bad "package \`${pkg}\` (${base}) missing from README.md catalog"
+    continue
+  fi
+
+  if [[ "$ver" != "?" ]] && readme_has_version_near_package "$pkg" "$ver"; then
+    ok "catalog version for \`${pkg}\` matches SKILL.md (${ver})"
+  elif [[ "$ver" == "?" ]]; then
+    bad "cannot read version from ${skill_md}"
+  else
+    bad "catalog version for \`${pkg}\` does not match SKILL.md (${ver}) — update README Published skills"
+  fi
+done
+
+if [[ "$found_skills" -eq 0 ]]; then
+  echo "  (no product *-skill packages found)"
+else
+  echo
+  echo "product skills checked: ${found_skills}"
+fi
+
+echo
+echo "Results: ${PASS} ok, ${FAIL} fail"
+if [[ "$FAIL" -gt 0 ]]; then
+  echo >&2
+  echo "Fix: update root README.md «Published skills» (package + version + install)," >&2
+  echo "     then commit parent. See schema/skill-repo.md § Parent catalog." >&2
+  exit 1
+fi
+exit 0

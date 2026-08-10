@@ -24,7 +24,7 @@ git submodule update --init --recursive
 | Skill package | Version | 说明 | Repo | Install |
 | --- | --- | --- | --- | --- |
 | **`lark-push`** | `1.3.0` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.5.3` | TaoziAPI 生图引擎 + 场景 kind + Plan C 斜杠（小红书/流程图/架构图/封面等） | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
+| **`tzai-image`** | `0.5.4` | TaoziAPI 生图引擎 + 场景 kind + Plan C 斜杠（小红书/流程图/架构图/封面等） | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
 
 ### `lark-push`
 
@@ -95,16 +95,31 @@ idea
 | [`AGENTS.md`](./AGENTS.md) | Agent contract SoT |
 | `<name>-skill/` | **Submodule** → product GitHub |
 
-### Catalog maintenance（必做）
+### Catalog maintenance（硬规范）
 
-Whenever a product skill is **first published** or **version-bumped for users**:
+根目录 **Published skills** 就是本孵化器的**目录**。  
+**新增 skill** 或 **用户可见的版本/用途变更** 时，必须同步目录，否则发布不算完成。
 
-1. Child repo: tag / push  
-2. Parent: `git add <name>-skill` (submodule SHA)  
-3. Parent: update **Published skills** table + short install blurb in this `README.md`  
-4. Parent: commit + push `kedoupi/skills`
+| 事件 | 必须更新 |
+| --- | --- |
+| 首次发布 / 首次挂 submodule | 新行 + 简介 + install |
+| 行为发版（version bump） | 版本号（+ 简介若用途变了） |
+| 下线 / 改名 | 删改对应行 |
 
-Do **not** only bump the submodule and leave the catalog at an old version.
+```bash
+bash scripts/check-catalog   # 磁盘 *-skill ↔ README 包名与版本
+bash scripts/doctor          # 含目录检查
+```
+
+流程：
+
+1. Child: push + tag  
+2. Parent: `git add <name>-skill`  
+3. Parent: 改本 README **Published skills** + `AGENTS.md` 短表  
+4. `bash scripts/check-catalog` 通过  
+5. Parent: commit + push  
+
+规范全文：[`schema/skill-repo.md`](./schema/skill-repo.md) § Parent catalog。
 
 ### Multi-agent notes
 

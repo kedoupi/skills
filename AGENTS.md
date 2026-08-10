@@ -31,14 +31,26 @@ Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
 If the user says a name already ending in `-skill`, that is the **repo dir**;
 the package name is the prefix without `-skill`.
 
-Published products (keep in sync with root `README.md` catalog):
+Published products (SoT for agents: **root `README.md` catalog**; keep this table short):
 
 | Package | Repo/dir | Install |
 | --- | --- | --- |
 | `lark-push` | `lark-push-skill` | `npx skills add kedoupi/lark-push-skill` |
 | `tzai-image` | `tzai-image-skill` | `npx skills add kedoupi/tzai-image-skill -g --all` |
 
-When releasing or first-publishing a product skill: bump child → register/bump submodule → **update root README catalog** → commit parent.
+### Catalog rule (**hard**)
+
+Root `README.md` **Published skills** is the incubator **directory**.  
+**Any add / public version change** of a product skill **must** update that catalog
+(package name, **version = SKILL.md**, one-line purpose, install).  
+Also bump this table when a skill is added or removed.
+
+```bash
+bash scripts/check-catalog   # FAIL if disk skill missing or version stale in README
+bash scripts/doctor          # includes catalog check
+```
+
+Release flow without catalog update is **incomplete** (schema: `schema/skill-repo.md` § Parent catalog).
 
 ## Layout
 
@@ -101,7 +113,9 @@ Prefer **skill-incubator → New skill**. Short form:
    bash scripts/register-submodule.sh <name>-skill
    ```
 
-6. Update root `README.md` catalog when publishing.
+6. **Catalog (mandatory for public):** update root `README.md` Published skills
+   (name, version, purpose, install) + this file’s short table; run
+   `bash scripts/check-catalog`.
 
 ## Editing an existing skill
 
@@ -112,13 +126,18 @@ Prefer **skill-incubator → New skill**. Short form:
 
    ```bash
    git add <name>-skill
-   git commit -m "chore: bump <name>-skill submodule"
+   # if version/purpose changed for users:
+   #   edit README.md Published skills + AGENTS.md table
+   git add README.md AGENTS.md
+   git commit -m "chore: bump <name>-skill (+ catalog if needed)"
+   bash scripts/check-catalog
    ```
 
 Inventory / health:
 
 ```bash
 bash scripts/list-skills
+bash scripts/check-catalog
 bash scripts/doctor
 # optional: Claude/Grok vendor discovery
 bash scripts/link-agent-skills
@@ -128,7 +147,8 @@ bash scripts/link-agent-skills
 
 1. In child: tests green, tag `vX.Y.Z`, push tag.
 2. `npx skills add kedoupi/<name>-skill --list`
-3. Parent: bump submodule pointer + catalog version column.
+3. Parent: bump submodule pointer + **README catalog version** (+ AGENTS table).
+4. `bash scripts/check-catalog` must pass before considering release done.
 
 ## Cross-skill conventions
 
@@ -142,8 +162,9 @@ bash scripts/link-agent-skills
 - **Tests**: `tests/run.sh` offline before publish
 - **Housekeeping**: no one-off debug scripts at incubator root; secrets never in packages
 - **Parent vs child**: parent holds schema/meta; child holds one product skill
+- **Catalog**: every product `*-skill` on disk must appear in root README with matching version
 
-Full detail: [`schema/skill-repo.md`](./schema/skill-repo.md).
+Full detail: [`schema/skill-repo.md`](./schema/skill-repo.md) § Parent catalog.
 
 ## Multi-agent file convention
 
