@@ -37,6 +37,7 @@ Published products (SoT for agents: **root `README.md` catalog**; keep this tabl
 | --- | --- | --- |
 | `lark-push` | `lark-push-skill` | `npx skills add kedoupi/lark-push-skill` |
 | `tzai-image` | `tzai-image-skill` | `npx skills add kedoupi/tzai-image-skill -g --all` |
+| `wechat-mp` | `wechat-mp-skill` | `npx skills add kedoupi/wechat-mp-skill` |
 
 ### Catalog rule (**hard**)
 

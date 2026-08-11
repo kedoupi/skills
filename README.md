@@ -25,6 +25,7 @@ git submodule update --init --recursive
 | --- | --- | --- | --- | --- |
 | **`lark-push`** | `1.3.0` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
 | **`tzai-image`** | `0.6.0` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
+| **`wechat-mp`** | `0.1.1` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
 
 ### `lark-push`
 
@@ -58,13 +59,39 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 
 常用斜杠示例：`/tzai-image` `/tzai-xhs` `/tzai-xhs-cover` `/tzai-flowchart` `/tzai-architecture` `/tzai-icon` `/tzai-cover` …
 
+### `wechat-mp`
+
+- 用途：微信公众号成稿（任务书/审稿轨）+ 本地 HTML 预览；可选草稿箱  
+- **套件组合**：单独可写；+ `tzai-image` 封面配图；+ `lark-push` 完成通知  
+- 文档：[README](https://github.com/kedoupi/wechat-mp-skill#readme) · [中文](https://github.com/kedoupi/wechat-mp-skill/blob/main/README.zh-CN.md)
+
+```bash
+npx skills add kedoupi/wechat-mp-skill
+# 常见组合：
+# npx skills add kedoupi/tzai-image-skill -g --all
+# npx skills add kedoupi/lark-push-skill
+```
+
+### 套件怎么拼（单独 / 组合）
+
+| 你想做的事 | 建议安装 |
+| --- | --- |
+| 只生图 | `tzai-image` |
+| 只飞书通知 | `lark-push` |
+| 只写公众号文稿 | `wechat-mp` |
+| 公众号 + 封面图 | `wechat-mp` + `tzai-image` |
+| 成稿后飞书知会 | 再加 `lark-push` |
+| 推微信草稿箱 | `wechat-mp init`（appid/secret） |
+
+各 skill **单职责、密钥分治**；组合靠 Agent 编排与 `manifest.json` 交接，不硬捆绑安装。
+
 ---
 
 ## Naming
 
 | | Pattern | Example |
 | --- | --- | --- |
-| Package name | `<name>` | `lark-push`, `tzai-image` |
+| Package name | `<name>` | `lark-push`, `tzai-image`, `wechat-mp` |
 | Repo + directory | `<name>-skill` | `lark-push-skill`, `tzai-image-skill` |
 | Install | `npx skills add kedoupi/<name>-skill` | |
 
