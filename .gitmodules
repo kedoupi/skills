@@ -4,3 +4,6 @@
 [submodule "tzai-image-skill"]
 	path = tzai-image-skill
 	url = git@github.com:kedoupi/tzai-image-skill.git
+[submodule "wechat-mp-skill"]
+	path = wechat-mp-skill
+	url = git@github.com:kedoupi/wechat-mp-skill.git
