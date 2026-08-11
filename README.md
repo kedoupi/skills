@@ -24,7 +24,7 @@ git submodule update --init --recursive
 | Skill package | Version | 说明 | Repo | Install |
 | --- | --- | --- | --- | --- |
 | **`lark-push`** | `1.3.0` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.5.4` | TaoziAPI 生图引擎 + 场景 kind + Plan C 斜杠（小红书/流程图/架构图/封面等） | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
+| **`tzai-image`** | `0.6.0` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
 
 ### `lark-push`
 
@@ -37,9 +37,9 @@ npx skills add kedoupi/lark-push-skill
 
 ### `tzai-image`
 
-- 用途：经 [TaoziAPI](https://tzai.kdp.cool) 文生图；默认模型 **`gpt-image-2`**
-- 形态：一个引擎 + 6 分类 hub + 11 高频场景斜杠（Plan C）；长尾 kind 走引擎
-- 能力摘要：小红书图卡/封面、信息图矩阵、封面五维、流程/架构图、`--ref` 参考图、多图工作流
+- 用途：自然语言驱动的创作 Agent，经 [TaoziAPI](https://tzai.kdp.cool) 规划并生成单图或完整视觉项目；默认模型 **`gpt-image-2`**
+- 形态：27 个结果型工作流 + 22 个视觉 Pattern + 30 个底层 kind；Plan C 斜杠保留为专家快捷入口
+- 能力摘要：UI 流程、小红书/公众号内容包、文章配图、品牌、商品发布、Campaign、知识图、PPT、角色 IP，以及方案/首图两阶段确认
 - 文档：[README](https://github.com/kedoupi/tzai-image-skill#readme) · [中文](https://github.com/kedoupi/tzai-image-skill/blob/main/README.zh-CN.md) · [场景表](https://github.com/kedoupi/tzai-image-skill/blob/main/docs/SCENES.md)
 
 ```bash
