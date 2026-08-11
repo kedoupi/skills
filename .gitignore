@@ -25,3 +25,6 @@ __pycache__/
 !.claude/skills/skill-incubator
 .grok/skills/*
 !.grok/skills/skill-incubator
+
+# local wechat-mp article outputs
+wechat-mp-out/
