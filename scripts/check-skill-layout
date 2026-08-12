@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# Verify product skill repos follow docs/ / tests/ / artifacts/ separation.
+# Schema: schema/skill-repo.md § Directory contract
+# Usage:
+#   bash scripts/check-skill-layout              # all *-skill
+#   bash scripts/check-skill-layout lark-push-skill tzai-image-skill
+set -euo pipefail
+
+INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$INCUBATOR_ROOT"
+
+PASS=0
+FAIL=0
+WARN=0
+ok() { echo "  [OK]   $*"; PASS=$((PASS + 1)); }
+bad() { echo "  [FAIL] $*"; FAIL=$((FAIL + 1)); }
+warn() { echo "  [WARN] $*"; WARN=$((WARN + 1)); }
+
+check_one() {
+  local skill_dir="$1"
+  local base
+  base="$(basename "$skill_dir")"
+  local pkg="${base%-skill}"
+  echo
+  echo "== $base =="
+
+  if [[ ! -d "$skill_dir" ]]; then
+    bad "$base: not a directory"
+    return
+  fi
+
+  # Package
+  if [[ -f "$skill_dir/skills/$pkg/SKILL.md" ]]; then
+    ok "$base: skills/$pkg/SKILL.md"
+  else
+    bad "$base: missing skills/$pkg/SKILL.md"
+  fi
+
+  # Core meta
+  [[ -f "$skill_dir/AGENTS.md" ]] && ok "$base: AGENTS.md" || bad "$base: missing AGENTS.md"
+  [[ -f "$skill_dir/README.md" ]] && ok "$base: README.md" || bad "$base: missing README.md"
+
+  # Offline tests
+  if [[ -f "$skill_dir/tests/run.sh" ]]; then
+    ok "$base: tests/run.sh"
+    if [[ -x "$skill_dir/tests/run.sh" ]] || head -1 "$skill_dir/tests/run.sh" | grep -q '^#!'; then
+      :
+    else
+      warn "$base: tests/run.sh not executable (CI may still bash it)"
+    fi
+  else
+    bad "$base: missing tests/run.sh"
+  fi
+
+  # tests/README when non-trivial
+  if [[ -d "$skill_dir/tests" ]]; then
+    local tests_extra=0
+    # anything other than run.sh counts
+    while IFS= read -r -d '' f; do
+      local rel="${f#"$skill_dir/tests/"}"
+      [[ "$rel" == "run.sh" ]] && continue
+      tests_extra=1
+      break
+    done < <(find "$skill_dir/tests" -type f -print0 2>/dev/null)
+    if [[ "$tests_extra" -eq 1 ]]; then
+      if [[ -f "$skill_dir/tests/README.md" ]]; then
+        ok "$base: tests/README.md (non-trivial tests/)"
+      else
+        bad "$base: tests/ has fixtures/live but missing tests/README.md"
+      fi
+    else
+      ok "$base: tests/ only run.sh (README optional)"
+    fi
+  fi
+
+  # No media binaries under tests/
+  if [[ -d "$skill_dir/tests" ]]; then
+    local media
+    media="$(find "$skill_dir/tests" -type f \( \
+      -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o \
+      -iname '*.webp' -o -iname '*.mp4' -o -iname '*.mov' \
+      \) 2>/dev/null | head -5 || true)"
+    if [[ -n "$media" ]]; then
+      bad "$base: media under tests/ (use artifacts/): $(echo "$media" | tr '\n' ' ')"
+    else
+      ok "$base: no media binaries under tests/"
+    fi
+  fi
+
+  # docs/
+  if [[ -d "$skill_dir/docs" ]]; then
+    if [[ -f "$skill_dir/docs/README.md" ]]; then
+      ok "$base: docs/README.md"
+    else
+      bad "$base: docs/ exists but missing docs/README.md"
+    fi
+    if [[ -d "$skill_dir/docs/benchmarks" ]]; then
+      bad "$base: docs/benchmarks/ is deprecated — use tests/live/ + artifacts/live/"
+    else
+      ok "$base: no docs/benchmarks/"
+    fi
+    # docs/demo/ is fine for markdown notes; warn only if it holds media (use screenshots/)
+    if [[ -d "$skill_dir/docs/demo" ]]; then
+      local demo_media
+      demo_media="$(find "$skill_dir/docs/demo" -type f \( \
+        -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.webp' \
+        \) 2>/dev/null | head -3 || true)"
+      if [[ -n "$demo_media" ]]; then
+        warn "$base: media under docs/demo/ — prefer docs/screenshots/ for gallery assets"
+      else
+        ok "$base: docs/demo/ notes only (no media)"
+      fi
+    fi
+  else
+    ok "$base: docs/ optional (absent)"
+  fi
+
+  # artifacts/
+  if [[ -d "$skill_dir/artifacts" ]]; then
+    if [[ -f "$skill_dir/artifacts/README.md" ]]; then
+      ok "$base: artifacts/README.md"
+    else
+      bad "$base: artifacts/ exists but missing artifacts/README.md"
+    fi
+  else
+    ok "$base: artifacts/ optional (absent)"
+  fi
+
+  # live suite pairing: if tests/live exists, remind artifacts convention (warn only)
+  if [[ -d "$skill_dir/tests/live" ]]; then
+    if [[ -d "$skill_dir/artifacts/live" ]]; then
+      ok "$base: tests/live + artifacts/live paired"
+    else
+      warn "$base: tests/live/ without artifacts/live/ yet (OK until first run)"
+    fi
+    # each suite should have cases or README
+    local suite
+    for suite in "$skill_dir"/tests/live/*/; do
+      [[ -d "$suite" ]] || continue
+      local sname
+      sname="$(basename "$suite")"
+      if [[ -f "${suite}cases.tsv" || -f "${suite}cases.md" || -f "${suite}README.md" ]]; then
+        ok "$base: live suite $sname has cases/README"
+      else
+        bad "$base: live suite $sname missing cases.tsv|cases.md|README.md"
+      fi
+    done
+  fi
+}
+
+echo "check-skill-layout"
+echo "root: $INCUBATOR_ROOT"
+
+TARGETS=()
+if [[ $# -gt 0 ]]; then
+  for a in "$@"; do
+    if [[ "$a" == /* ]]; then
+      TARGETS+=("$a")
+    elif [[ -d "$INCUBATOR_ROOT/$a" ]]; then
+      TARGETS+=("$INCUBATOR_ROOT/$a")
+    else
+      bad "unknown path: $a"
+    fi
+  done
+else
+  for d in "$INCUBATOR_ROOT"/*-skill; do
+    [[ -d "$d" ]] || continue
+    TARGETS+=("$d")
+  done
+fi
+
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
+  warn "no product *-skill directories to check"
+else
+  for t in "${TARGETS[@]}"; do
+    check_one "$t"
+  done
+fi
+
+echo
+echo "Results: $PASS ok, $WARN warn, $FAIL fail"
+if [[ "$FAIL" -gt 0 ]]; then
+  exit 1
+fi
+exit 0

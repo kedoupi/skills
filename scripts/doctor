@@ -98,6 +98,30 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 echo
+echo "== product skill layout (docs / tests / artifacts) =="
+if [[ -x scripts/check-skill-layout ]]; then
+  set +e
+  lay_out="$(bash scripts/check-skill-layout 2>&1)"
+  lay_rc=$?
+  set -e
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    case "$line" in
+      check-skill-layout*|root:*|Results:*|==\ *) echo "  $line" ;;
+      \ \ \[OK\]*) ok "${line#*\[OK\]   }" ;;
+      \ \ \[FAIL\]*) bad "${line#*\[FAIL\] }" ;;
+      \ \ \[WARN\]*) warn "${line#*\[WARN\] }" ;;
+      *) echo "  $line" ;;
+    esac
+  done <<<"$lay_out"
+  if [[ "$lay_rc" -ne 0 ]]; then
+    bad "layout check failed (see scripts/check-skill-layout + schema/skill-repo.md § docs/tests/artifacts)"
+  fi
+else
+  warn "scripts/check-skill-layout missing"
+fi
+
+echo
 echo "== parent catalog (README Published skills) =="
 if [[ -x scripts/check-catalog ]]; then
   set +e

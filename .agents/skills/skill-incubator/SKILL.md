@@ -145,9 +145,10 @@ Prefer scripts (deterministic):
 
 ```bash
 bash scripts/list-skills
-bash scripts/check-catalog   # package dir ↔ README version
-bash scripts/doctor          # includes catalog check
-bash scripts/link-agent-skills   # optional Claude/Grok vendor symlinks
+bash scripts/check-catalog        # package dir ↔ README version
+bash scripts/check-skill-layout   # docs / tests / artifacts separation
+bash scripts/doctor               # includes catalog + layout
+bash scripts/link-agent-skills    # optional Claude/Grok vendor symlinks
 ```
 
 | Check | Expect |
@@ -157,6 +158,7 @@ bash scripts/link-agent-skills   # optional Claude/Grok vendor symlinks
 | Meta skill | `.agents/skills/skill-incubator/SKILL.md` |
 | Product | dir ends with `-skill`, package under `skills/<name>/` |
 | Catalog | every product package listed in README with matching version |
+| Layout | `docs/` · `tests/` · `artifacts/` separation (`schema/skill-repo.md`) |
 
 ## Safety
 

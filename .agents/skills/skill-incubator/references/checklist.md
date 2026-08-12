@@ -17,7 +17,10 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 - [ ] `skills/<name>/SKILL.md` description + version
 - [ ] Scripts `pwd -P`; dry-run offline if side effects
 - [ ] README EN + zh-CN
+- [ ] Layout: `docs/` guides only; `tests/` offline + live **specs**; `artifacts/` for generated outputs
+- [ ] `docs/README.md` if `docs/` used; no `docs/benchmarks/`; no media under `tests/`
 - [ ] `bash <name>-skill/tests/run.sh` passes
+- [ ] `bash scripts/check-skill-layout <name>-skill` green
 - [ ] GitHub `kedoupi/<name>-skill` created + child pushed
 - [ ] `bash scripts/register-submodule.sh <name>-skill`
 - [ ] **Catalog:** parent `README.md` Published skills row + install blurb
@@ -50,6 +53,7 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 ```bash
 bash scripts/list-skills
 bash scripts/check-catalog
+bash scripts/check-skill-layout
 bash scripts/doctor
 bash scripts/link-agent-skills   # optional
 ```
