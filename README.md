@@ -15,6 +15,15 @@ git clone --recurse-submodules git@github.com:kedoupi/skills.git
 git submodule update --init --recursive
 ```
 
+## Product architecture
+
+The project-local [`skill-incubator`](./.agents/skills/skill-incubator/) manages the
+parent registry and product submodules. Product skills can run independently or be
+composed by an agent: `wechat-mp` can request visuals from `tzai-image`, while
+`lark-push` delivers progress and completion notices to Feishu/Lark.
+
+[![Kedoupi Skills product architecture](./docs/screenshots/skill-incubator/kedoupi-skills-architecture.png)](./docs/screenshots/skill-incubator/kedoupi-skills-architecture.png)
+
 ---
 
 ## Published skills（目录）
