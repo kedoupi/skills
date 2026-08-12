@@ -40,7 +40,8 @@ bash <skill-dir>/scripts/<skill-name> init --chat-id <id>
 ```
 
 Config is stored **outside** the skill package (survives `npx skills update`).
-See incubator schema: durable path is `<skills-parent>/.skill-data/<skill-name>/config.env`.
+Recommended path: `~/.config/kedoupi/<skill-name>/config.env`; legacy `.skill-data`
+paths may be read only for one-shot migration. Never edit the user's shell rc.
 
 Inspect:
 

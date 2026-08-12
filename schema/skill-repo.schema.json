@@ -2,18 +2,40 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/kedoupi/skills-incubator/schema/skill-repo.schema.json",
   "title": "Kedoupi Skill Repo (baseline)",
-  "description": "Machine-checkable subset of schema/skill-repo.md. Evolves when external schemas are folded in.",
+  "description": "Machine-checkable subset of schema/skill-repo.md for a single or family product repo.",
   "type": "object",
-  "required": ["name", "package"],
+  "required": ["name", "repository_type", "primary_skill", "entrypoints", "entrypoint_version_policy", "package"],
   "additionalProperties": false,
   "properties": {
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]{1,2}$",
-      "description": "Kebab-case skill name; matches skills/<name>/"
+      "description": "Kebab-case product id; matches the primary skill and <name>-skill repo"
+    },
+    "repository_type": {
+      "enum": ["single", "family"],
+      "description": "One primary entrypoint, or a related multi-entrypoint release unit"
+    },
+    "primary_skill": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]{1,2}$"
+    },
+    "entrypoints": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]{1,2}$"
+      },
+      "description": "Every installable skills/<entrypoint>/SKILL.md in the product repo"
+    },
+    "entrypoint_version_policy": {
+      "enum": ["lockstep", "independent"]
     },
     "package": {
       "type": "object",
+      "description": "Primary package contract; family facades are enumerated by entrypoints",
       "required": ["skill_md", "scripts"],
       "properties": {
         "skill_md": {

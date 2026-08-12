@@ -21,14 +21,14 @@ that **author** product skills. **Not** published via `npx skills add`.
 ## Always
 
 1. Resolve **incubator root**: contains `schema/`, `_template/`, `scripts/new-skill.sh`.
-2. Contract SoT: [`schema/skill-repo.md`](../../../schema/skill-repo.md).
+2. Contract SoT: [`schema/skill-repo.md`](../../../schema/skill-repo.md); product registry SoT: `products.json`.
 3. **Naming**
    - Package (`SKILL.md` name): `<name>` (e.g. `lark-push`)
    - GitHub + submodule dir: `<name>-skill` (e.g. `lark-push-skill`)
    - Install: `npx skills add kedoupi/<name>-skill`
    - Path: `<name>-skill/skills/<name>/`
-4. Parent is git + **submodules**; each product skill is its own GitHub.
-5. Scaffold only via `bash scripts/new-skill.sh …` (do not hand-copy `_template`).
+4. Parent is git + **submodules**; each product repo is its own GitHub and is type `single` or `family`.
+5. Scaffold creates a `single` product via `bash scripts/new-skill.sh …` (do not hand-copy `_template`).
 6. Never ship this meta skill inside a product package.
 
 Example product: package `lark-push` in submodule dir `lark-push-skill` (`kedoupi/lark-push-skill`).
@@ -82,22 +82,22 @@ bash scripts/register-submodule.sh <name>-skill
 git push origin main   # parent, after user approves
 ```
 
-### 6. Catalog (**mandatory**)
+### 6. Registry + catalog (**mandatory**)
 
-Parent root **`README.md` → Published skills** is the incubator **directory**.  
-Incomplete if the skill ships but is missing/stale there.
+Parent root **`products.json`** is the product directory; README/AGENTS tables are
+generated views. Incomplete if a product or entrypoint ships but is missing/stale.
 
 ```bash
 # after submodule register / first public release:
-# 1) add row: package | version | purpose | repo | install
-# 2) short install blurb if non-trivial
-# 3) sync AGENTS.md published-products table
-# 4) verify:
+# 1) add products.json object: type, primary, entrypoints, purpose, repo, install
+# 2) add a short install blurb if non-trivial
+# 3) generate and verify:
+bash scripts/render-catalog
 bash scripts/check-catalog
 bash scripts/doctor
 ```
 
-Schema SoT: `schema/skill-repo.md` § **Parent catalog**.
+Schema SoT: `schema/skill-repo.md` § **Product registry and generated catalog**.
 
 ## Edit skill
 
@@ -110,8 +110,8 @@ Schema SoT: `schema/skill-repo.md` § **Parent catalog**.
 
 | Kind | Action |
 | --- | --- |
-| Behavior | Code + bump package `metadata.version` + **catalog version** |
-| Docs only | No version bump; catalog optional |
+| Behavior | Code + bump primary `metadata.version`; sync lockstep family entrypoints; render catalog |
+| Docs only | No version bump; registry/catalog optional unless product facts changed |
 | Incubator-wide | `schema/` + `_template/` on **parent** |
 
 ### 3. Git (two repos)
@@ -120,10 +120,11 @@ Schema SoT: `schema/skill-repo.md` § **Parent catalog**.
 # inside child submodule
 git add … && git commit && git push
 
-# parent: bump pointer + catalog when version/user-facing purpose changed
+# parent: bump pointer; update products.json if purpose/entrypoints changed
 cd <incubator-root>
-git add <name>-skill README.md AGENTS.md
-git commit -m "chore: bump <name>-skill (+ catalog if needed)"
+bash scripts/render-catalog
+git add <name>-skill products.json README.md AGENTS.md
+git commit -m "chore: bump <name>-skill (+ generated catalog if needed)"
 bash scripts/check-catalog
 ```
 
@@ -134,10 +135,10 @@ Confirm before any push.
 1. Child: `bash tests/run.sh` green  
 2. Version = tag `vX.Y.Z`; push tag on **child** remote  
 3. `npx skills add kedoupi/<name>-skill --list`  
-4. Parent: submodule pointer + **README catalog version** + AGENTS list  
-5. `bash scripts/check-catalog` green, then parent commit/push  
+4. Parent: submodule pointer + optional registry changes + `bash scripts/render-catalog`
+5. `bash scripts/check-catalog` green, then parent commit/push
 
-**Do not** ship a release with only a submodule SHA bump and an outdated catalog.
+**Do not** ship a release with only a submodule SHA bump and stale registry/generated views.
 
 ## List & doctor
 
@@ -145,7 +146,8 @@ Prefer scripts (deterministic):
 
 ```bash
 bash scripts/list-skills
-bash scripts/check-catalog        # package dir ↔ README version
+bash scripts/render-catalog --check
+bash scripts/check-catalog        # registry ↔ packages ↔ generated views
 bash scripts/check-skill-layout   # docs / tests / artifacts separation
 bash scripts/doctor               # includes catalog + layout
 bash scripts/link-agent-skills    # optional Claude/Grok vendor symlinks
@@ -156,8 +158,8 @@ bash scripts/link-agent-skills    # optional Claude/Grok vendor symlinks
 | Parent git | `kedoupi/skills` |
 | Schema / template / scripts | present + executable |
 | Meta skill | `.agents/skills/skill-incubator/SKILL.md` |
-| Product | dir ends with `-skill`, package under `skills/<name>/` |
-| Catalog | every product package listed in README with matching version |
+| Product | registered `single` or `family`; all `skills/*/SKILL.md` entrypoints declared |
+| Catalog | products.json matches packages/submodules; generated tables current |
 | Layout | `docs/` · `tests/` · `artifacts/` separation (`schema/skill-repo.md`) |
 
 ## Safety

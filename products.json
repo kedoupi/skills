@@ -1,0 +1,62 @@
+{
+  "$schema": "./schema/products.schema.json",
+  "schema_version": "1",
+  "products": [
+    {
+      "id": "lark-push",
+      "repo_dir": "lark-push-skill",
+      "repository": "kedoupi/lark-push-skill",
+      "type": "single",
+      "primary_skill": "lark-push",
+      "entrypoints": ["lark-push"],
+      "entrypoint_version_policy": "lockstep",
+      "status": "published",
+      "purpose": "飞书/Lark 群推送：完成通知、日报周报、发布摘要",
+      "install": "npx skills add kedoupi/lark-push-skill"
+    },
+    {
+      "id": "tzai-image",
+      "repo_dir": "tzai-image-skill",
+      "repository": "kedoupi/tzai-image-skill",
+      "type": "family",
+      "primary_skill": "tzai-image",
+      "entrypoints": [
+        "tzai-image",
+        "tzai-brand",
+        "tzai-diagram",
+        "tzai-product",
+        "tzai-marketing",
+        "tzai-social",
+        "tzai-photo",
+        "tzai-icon",
+        "tzai-logo",
+        "tzai-flowchart",
+        "tzai-architecture",
+        "tzai-infographic",
+        "tzai-cover",
+        "tzai-slide",
+        "tzai-xhs",
+        "tzai-xhs-cover",
+        "tzai-wechat",
+        "tzai-ui"
+      ],
+      "entrypoint_version_policy": "lockstep",
+      "status": "published",
+      "purpose": "TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎",
+      "install": "npx skills add kedoupi/tzai-image-skill -g --all",
+      "catalog_install": "见下"
+    },
+    {
+      "id": "wechat-mp",
+      "repo_dir": "wechat-mp-skill",
+      "repository": "kedoupi/wechat-mp-skill",
+      "type": "single",
+      "primary_skill": "wechat-mp",
+      "entrypoints": ["wechat-mp"],
+      "entrypoint_version_policy": "lockstep",
+      "status": "published",
+      "purpose": "微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱",
+      "install": "npx skills add kedoupi/wechat-mp-skill"
+    }
+  ]
+}

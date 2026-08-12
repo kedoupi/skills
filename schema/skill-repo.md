@@ -7,11 +7,16 @@
 
 ## Purpose
 
-**Parent incubator** (`kedoupi/skills`) holds schema, template, meta skill, and
-registers each product skill as a **git submodule**.
+**Parent incubator** (`kedoupi/skills`) holds the product registry, schema,
+template, meta skill, generated catalog, and product repos as **git submodules**.
 
-**Product skill** repos are named `kedoupi/<name>-skill` and ship **one**
-installable package via:
+A **product repo** is one independently released unit named
+`kedoupi/<name>-skill`. It has one primary skill and is explicitly one of:
+
+| Type | Contract | Example |
+| --- | --- | --- |
+| `single` | Exactly one installable entrypoint | `lark-push` |
+| `family` | One primary skill plus related entrypoints in the same release unit | `tzai-image` engine + generated facades |
 
 ```bash
 npx skills add kedoupi/<name>-skill
@@ -19,19 +24,21 @@ npx skills add kedoupi/<name>-skill
 
 | Concept | Pattern | Example |
 | --- | --- | --- |
-| Package `name` in `SKILL.md` | `<name>` | `lark-push` |
+| Product id + primary `SKILL.md` name | `<name>` | `lark-push` |
 | Child GitHub + submodule path | `<name>-skill` | `lark-push-skill` |
-| Installable path in child | `skills/<name>/` | `skills/lark-push/` |
+| Primary package path | `skills/<name>/` | `skills/lark-push/` |
+| Family entrypoint path | `skills/<entrypoint>/` | `skills/tzai-icon/` |
 
 **Meta vs product**
 
 | Kind | Location | Published? |
 | --- | --- | --- |
-| **Product skill** | `<name>-skill/skills/<name>/` (submodule child repo) | Yes (`npx skills add kedoupi/<name>-skill`) |
+| **Product repo** | `<name>-skill/skills/…` (submodule child repo) | Yes (`npx skills add kedoupi/<name>-skill`) |
 | **Meta skill** | `.agents/skills/skill-incubator/` on parent | **No** |
-| **Parent** | `kedoupi/skills` | Not a skills.sh product; **catalog is SoT for published list** + tooling |
+| **Parent** | `kedoupi/skills` | Not a skills.sh product; `products.json` is registry SoT + tooling |
 
-Authoring flows: meta skill `SKILL.md`. This file remains directory/contract SoT.
+Authoring flows: meta skill `SKILL.md`. Repo contract: this document. Product
+identity/type/entrypoints: `products.json`.
 
 **Example:** package `lark-push`, child repo `kedoupi/lark-push-skill`.
 
@@ -46,45 +53,54 @@ idea / pain point
   → create GitHub kedoupi/<name>-skill + push child
   → scripts/register-submodule.sh <name>-skill
   → tag child + skills.sh (optional)
-  → **MUST** update parent README catalog + AGENTS published list
-  → commit parent (submodule pointer + catalog)
+  → **MUST** update products.json when product facts changed
+  → scripts/render-catalog
+  → commit parent (submodule pointer + registry + generated catalog)
 ```
 
-## Parent catalog (mandatory)
+## Product registry and generated catalog (mandatory)
 
-The incubator root **`README.md` → Published skills** is the **public directory** of
-this monorepo. A skill that exists on disk / as a submodule but is missing or
-stale in the catalog is **incomplete**.
+The incubator root **`products.json`** is the machine-readable product directory.
+`README.md` → Published skills and the short `AGENTS.md` product table are generated
+public/agent views. A product, entrypoint, submodule, or generated view that disagrees
+with the registry is **incomplete**.
 
-### When catalog MUST be updated
+Registry schema: [`products.schema.json`](./products.schema.json). Decision record:
+[`adr/0001-product-registry-and-skill-families.md`](./adr/0001-product-registry-and-skill-families.md).
+
+### When registry/catalog MUST be updated
 
 | Event | Catalog action |
 | --- | --- |
-| **Add** a product skill (first publish / first submodule) | New row + short blurb + install command |
-| **Behavior release** of a product skill (version bump users care about) | Update **Version** column (+ one-line if purpose changed) |
-| **Rename / retire** a product skill | Rename row or mark retired; do not leave orphan entries |
-| Docs-only tweak inside child | Catalog version optional (if version not bumped) |
+| **Add** a product (first publish / first submodule) | Add registry object, type, primary, entrypoints, purpose, install |
+| **Behavior release** | Primary `SKILL.md` remains version SoT; lockstep family entrypoints match it |
+| **Add/remove family entrypoint** | Update registry `entrypoints` and regenerate views |
+| **Rename / retire** | Update registry identity/status; do not leave orphan repos or entrypoints |
+| Docs-only tweak inside child | No product version change required |
 
 ### What a catalog row needs
 
 | Field | Required |
 | --- | --- |
-| Package name (matches `SKILL.md` `name`) | yes |
-| Version (matches package `metadata.version`) | yes (for published) |
-| One-line purpose | yes |
-| Child repo link `kedoupi/<name>-skill` | yes |
-| Install command | yes |
+| Product id + primary skill | yes |
+| Product type (`single` / `family`) | yes |
+| Complete installable entrypoint list | yes |
+| Entrypoint version policy (`lockstep` / `independent`) | yes |
+| One-line purpose + install command | yes |
+| Child repo `kedoupi/<name>-skill` | yes |
 
-Also keep root **`AGENTS.md`** published-products table in sync (shorter form is fine).
+Version is read from the primary `SKILL.md`, not duplicated in `products.json`.
+Generate both Markdown views with `bash scripts/render-catalog`; never hand-edit rows.
 
 ### Enforcement
 
 ```bash
-bash scripts/doctor          # FAIL if disk *-skill missing from README catalog
-bash scripts/check-catalog   # catalog-only check (same rules)
+bash scripts/render-catalog  # products.json + primary version → Markdown views
+bash scripts/check-catalog   # registry ↔ packages ↔ .gitmodules ↔ generated views
+bash scripts/doctor          # includes registry/catalog + layout
 ```
 
-Agents **must not** finish a release or “add skill” task without catalog + parent commit
+Agents **must not** finish a release or “add skill” task without registry/catalog + parent commit
 (unless user explicitly says private / no catalog).
 
 ## Directory contract
@@ -95,6 +111,7 @@ Agents **must not** finish a release or “add skill” task without catalog + p
 Skills/
 ├── .git/
 ├── .gitmodules
+├── products.json
 ├── AGENTS.md / CLAUDE.md / README.md
 ├── .agents/skills/skill-incubator/
 ├── schema/
@@ -118,12 +135,13 @@ Skills/
 ├── CONTRIBUTING.md
 ├── skills.sh.json                 # skills.sh grouping (optional but recommended)
 ├── skills/
-│   └── <name>/                    # THE installable package (CLI discovers this)
-│       ├── SKILL.md               # required — agent-facing definition
-│       ├── config.example.env     # if skill needs durable config
-│       ├── scripts/               # executables (pwd -P safe)
-│       ├── references/            # optional long agent references
-│       └── templates/             # optional body/prompt templates
+│   ├── <name>/                    # primary installable package
+│   │   ├── SKILL.md               # required — agent-facing definition
+│   │   ├── config.example.env     # if skill needs durable config
+│   │   ├── scripts/               # executables (pwd -P safe)
+│   │   ├── references/            # optional long agent references
+│   │   └── templates/             # optional body/prompt templates
+│   └── <entrypoint>/              # family only; related facade/package
 ├── tests/                         # offline CI + optional live *specs*
 │   ├── README.md                  # required when tests/ has more than run.sh
 │   ├── run.sh                     # offline self-test (required for published skills)
@@ -141,13 +159,23 @@ Skills/
 └── .github/workflows/ci.yml       # recommended
 ```
 
+### Single vs family product repos
+
+- `single`: `skills/` contains exactly the primary package.
+- `family`: `skills/` contains the primary package plus every entrypoint listed in
+  `products.json`; no unregistered installable package is allowed.
+- `lockstep`: every entrypoint `metadata.version` matches the primary version.
+- `independent`: entrypoints may version separately, but the primary version remains the
+  product catalog version.
+- A family is one release unit, not an excuse to combine unrelated products.
+
 ### docs / tests / artifacts (**hard separation**)
 
 These three trees must not blur. SoT for agents: this section + `scripts/check-skill-layout`.
 
 | Tree | Role | Network / paid | Installable? |
 | --- | --- | --- | --- |
-| **`skills/<name>/`** | What `npx skills add` installs | N/A | **Yes** |
+| **`skills/<entrypoint>/`** | What `npx skills add` installs | N/A | **Yes** |
 | **`docs/`** | Human guides, architecture, **curated** gallery | No | No |
 | **`tests/`** | Offline CI + **live case definitions** (prompts, rubrics, fixtures) | Offline required; live optional | No |
 | **`artifacts/`** | **Generated** outputs (images, HTML dumps, live reports) | Often yes | No |
@@ -167,7 +195,7 @@ These three trees must not blur. SoT for agents: this section + `scripts/check-s
 ```bash
 bash scripts/check-skill-layout          # all product *-skill dirs
 bash scripts/check-skill-layout lark-push-skill
-bash scripts/doctor                      # includes layout + catalog
+bash scripts/doctor                      # includes layout + registry/catalog
 ```
 
 ### Forbidden / discouraged
@@ -356,7 +384,7 @@ Live suites must not be required for default `tests/run.sh` (CI offline).
 - Semver in `SKILL.md`
 - Conventional Commits preferred
 - Tag `vX.Y.Z` on publish
-- Update incubator root `README.md` catalog when a skill is first published
+- Register first publication in `products.json`; run `scripts/render-catalog`
 
 ## Evolving this schema
 

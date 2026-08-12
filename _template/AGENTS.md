@@ -46,6 +46,7 @@ No media under `tests/`; no `docs/benchmarks/`. Incubator SoT: `schema/skill-rep
 
 - Keep `SKILL.md` under ~500 lines; put long references in separate files.
 - Do not hardcode private credentials or team-specific identifiers.
+- Recommended durable config is `~/.config/kedoupi/<skill-name>/config.env`; never edit shell rc files.
 - Scripts must resolve their own directory with `pwd -P` so symlink installs work.
 - Minimize runtime dependencies.
 - Bump `metadata.version` in `SKILL.md` when behavior changes.

@@ -5,8 +5,8 @@ for multi-agent use (`npx skills add`).
 
 | Layer | GitHub | What lives there |
 | --- | --- | --- |
-| **Parent** | [kedoupi/skills](https://github.com/kedoupi/skills) | schema, template, meta skill, **catalog**, git submodules |
-| **Product skill** | `kedoupi/<name>-skill` | one installable package under `skills/<name>/` |
+| **Parent** | [kedoupi/skills](https://github.com/kedoupi/skills) | product registry, schema, template, meta skill, generated catalog, git submodules |
+| **Product repo** | `kedoupi/<name>-skill` | one release unit: a single skill or a skill family under `skills/` |
 
 ```bash
 # clone incubator + all product skills
@@ -19,13 +19,16 @@ git submodule update --init --recursive
 
 ## Published skills（目录）
 
-每增加一个可安装 product skill，**必须**在本表登记，并随父仓 commit / push。
+产品事实登记在 [`products.json`](./products.json)；下表由它和 primary `SKILL.md`
+版本生成。不要手改表格行，运行 `bash scripts/render-catalog`。
 
-| Skill package | Version | 说明 | Repo | Install |
-| --- | --- | --- | --- | --- |
-| **`lark-push`** | `1.4.1` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.7.1` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
-| **`wechat-mp`** | `0.2.1` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
+<!-- BEGIN GENERATED PRODUCT CATALOG -->
+| Skill product | Version | Type | 说明 | Repo | Install |
+| --- | --- | --- | --- | --- | --- |
+| **`lark-push`** | `1.4.1` | `single` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
+| **`tzai-image`** | `0.7.1` | `family` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `见下` |
+| **`wechat-mp`** | `0.2.1` | `single` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
+<!-- END GENERATED PRODUCT CATALOG -->
 
 ### `lark-push`
 
@@ -91,8 +94,9 @@ npx skills add kedoupi/wechat-mp-skill
 
 | | Pattern | Example |
 | --- | --- | --- |
-| Package name | `<name>` | `lark-push`, `tzai-image`, `wechat-mp` |
+| Product / primary skill | `<name>` | `lark-push`, `tzai-image`, `wechat-mp` |
 | Repo + directory | `<name>-skill` | `lark-push-skill`, `tzai-image-skill` |
+| Product type | `single` or `family` | `tzai-image` is a family with 18 entrypoints |
 | Install | `npx skills add kedoupi/<name>-skill` | |
 
 ## How this incubator works
@@ -104,19 +108,23 @@ idea
   → implement + bash <name>-skill/tests/run.sh
   → create GitHub kedoupi/<name>-skill + push
   → bash scripts/register-submodule.sh <name>-skill
-  → update this README catalog (version + one-line + install)
-  → commit parent: catalog + submodule pointer
+  → register product facts / entrypoints in products.json
+  → bash scripts/render-catalog
+  → commit parent: registry + generated catalog + submodule pointer
   → (optional) tag child vX.Y.Z + skills.sh
 ```
 
 | Path | Role |
 | --- | --- |
-| [`schema/skill-repo.md`](./schema/skill-repo.md) | Living schema (layout, config, safety, tests) |
-| [`_template/`](./_template/) | Product skill skeleton |
+| [`products.json`](./products.json) | Product registry SoT (single/family, primary, entrypoints, install) |
+| [`schema/products.schema.json`](./schema/products.schema.json) | Registry machine schema |
+| [`schema/skill-repo.md`](./schema/skill-repo.md) | Living repo schema (layout, config, safety, tests) |
+| [`_template/`](./_template/) | Single-product skeleton |
 | [`scripts/new-skill.sh`](./scripts/new-skill.sh) | Scaffold `./<name>-skill/` |
 | [`scripts/register-submodule.sh`](./scripts/register-submodule.sh) | `git submodule add` helper |
 | [`scripts/list-skills`](./scripts/list-skills) | List product skill dirs / remotes |
-| [`scripts/check-catalog`](./scripts/check-catalog) | README catalog ↔ package versions |
+| [`scripts/check-catalog`](./scripts/check-catalog) | Registry ↔ disk ↔ submodules ↔ generated views |
+| [`scripts/render-catalog`](./scripts/render-catalog) | Generate README/AGENTS product tables |
 | [`scripts/check-skill-layout`](./scripts/check-skill-layout) | `docs/` · `tests/` · `artifacts/` separation |
 | [`scripts/doctor`](./scripts/doctor) | Incubator health (catalog + layout + …) |
 | [`scripts/link-agent-skills`](./scripts/link-agent-skills) | Symlink meta skill for Claude/Grok |
@@ -126,17 +134,19 @@ idea
 
 ### Catalog maintenance（硬规范）
 
-根目录 **Published skills** 就是本孵化器的**目录**。  
-**新增 skill** 或 **用户可见的版本/用途变更** 时，必须同步目录，否则发布不算完成。
+根目录 **`products.json`** 是产品目录 SoT；Published skills 是生成后的公开视图。
+**新增产品、入口、用途变更** 时修改 registry；primary 版本从 `SKILL.md` 读取。
 
 | 事件 | 必须更新 |
 | --- | --- |
-| 首次发布 / 首次挂 submodule | 新行 + 简介 + install |
-| 行为发版（version bump） | 版本号（+ 简介若用途变了） |
-| 下线 / 改名 | 删改对应行 |
+| 首次发布 / 首次挂 submodule | 增加 registry 产品、类型、入口、简介、install |
+| 行为发版（version bump） | 更新 primary `SKILL.md`，family lockstep 入口同步版本 |
+| 新增 / 删除 family 入口 | 更新 `entrypoints` |
+| 下线 / 改名 | 更新 registry `status` 或对应产品 |
 
 ```bash
-bash scripts/check-catalog        # 磁盘 *-skill ↔ README 包名与版本
+bash scripts/render-catalog       # products.json + SKILL.md → README / AGENTS
+bash scripts/check-catalog        # registry ↔ packages ↔ .gitmodules ↔ generated views
 bash scripts/check-skill-layout   # docs / tests / artifacts 分离
 bash scripts/doctor               # 含 catalog + layout
 ```
@@ -145,11 +155,11 @@ bash scripts/doctor               # 含 catalog + layout
 
 1. Child: push + tag  
 2. Parent: `git add <name>-skill`  
-3. Parent: 改本 README **Published skills** + `AGENTS.md` 短表  
-4. `bash scripts/check-catalog` 通过  
+3. Parent: 必要时改 `products.json`；运行 `bash scripts/render-catalog`
+4. `bash scripts/check-catalog` 通过
 5. Parent: commit + push  
 
-规范全文：[`schema/skill-repo.md`](./schema/skill-repo.md) § Parent catalog。
+规范全文：[`schema/skill-repo.md`](./schema/skill-repo.md) § Product registry。
 
 ### Multi-agent notes
 
@@ -167,7 +177,7 @@ bash tests/run.sh
 # create GitHub kedoupi/my-feature-skill, push, then from parent:
 cd ..
 bash scripts/register-submodule.sh my-feature-skill
-# then edit README.md Published skills table + commit parent
+# then add products.json entry, run scripts/render-catalog, and commit parent
 ```
 
 ### Schema evolution
@@ -178,5 +188,6 @@ bash scripts/register-submodule.sh my-feature-skill
 
 ---
 
-Each product skill is an independent public GitHub repository (submodule here)
-following [Agent Skills](https://agentskills.io/) and this incubator’s schema.
+Each product is an independent public GitHub repository (submodule here), modeled as
+either a single skill or a lockstep/independent skill family, following
+[Agent Skills](https://agentskills.io/) and this incubator’s schema.

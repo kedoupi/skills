@@ -5,8 +5,8 @@ set -euo pipefail
 INCUBATOR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$INCUBATOR_ROOT"
 
-printf '%-28s %-20s %-10s %s\n' "DIR" "PACKAGE" "VERSION" "REMOTE"
-printf '%-28s %-20s %-10s %s\n' "---" "-------" "-------" "------"
+printf '%-24s %-18s %-8s %-7s %-10s %s\n' "DIR" "PRIMARY" "TYPE" "ENTRIES" "VERSION" "REMOTE"
+printf '%-24s %-18s %-8s %-7s %-10s %s\n' "---" "-------" "----" "-------" "-------" "------"
 
 found=0
 for d in */; do
@@ -38,7 +38,11 @@ for d in */; do
     remote="$(git -C "$d" remote get-url origin 2>/dev/null || echo '(no origin)')"
   fi
 
-  printf '%-28s %-20s %-10s %s\n' "$base" "$pkg" "$ver" "$remote"
+  entries="$(find "${d}skills" -mindepth 2 -maxdepth 2 -type f -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')"
+  product_type="single"
+  [[ "$entries" -gt 1 ]] && product_type="family"
+
+  printf '%-24s %-18s %-8s %-7s %-10s %s\n' "$base" "$pkg" "$product_type" "$entries" "$ver" "$remote"
   found=$((found + 1))
 done
 

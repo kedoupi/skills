@@ -23,10 +23,10 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 - [ ] `bash scripts/check-skill-layout <name>-skill` green
 - [ ] GitHub `kedoupi/<name>-skill` created + child pushed
 - [ ] `bash scripts/register-submodule.sh <name>-skill`
-- [ ] **Catalog:** parent `README.md` Published skills row + install blurb
-- [ ] **Catalog:** parent `AGENTS.md` published-products table
+- [ ] **Registry:** add `products.json` object (`single` by default) + install blurb
+- [ ] `bash scripts/render-catalog` updates README + AGENTS generated tables
 - [ ] `bash scripts/check-catalog` green
-- [ ] Parent commit + push (submodule pointer **and** catalog)
+- [ ] Parent commit + push (submodule pointer + registry/generated catalog)
 
 ## Edit skill
 
@@ -34,9 +34,10 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 - [ ] Behavior → bump package version; docs-only → no bump
 - [ ] Child commit + push
 - [ ] Parent: `git add <name>-skill`
-- [ ] **If version bumped / purpose changed:** update README catalog version (+ blurb)
+- [ ] **If family lockstep version bumped:** regenerate/sync all entrypoint versions
+- [ ] **If purpose/entrypoints changed:** update `products.json`
 - [ ] EN / zh-CN synced when user-facing
-- [ ] `bash scripts/check-catalog` when catalog touched
+- [ ] `bash scripts/render-catalog && bash scripts/check-catalog`
 - [ ] Parent commit
 
 ## Release
@@ -44,7 +45,7 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 - [ ] Child tests green
 - [ ] Tag `vX.Y.Z` on **child**
 - [ ] `npx skills add kedoupi/<name>-skill --list`
-- [ ] Parent pointer + **README catalog version**
+- [ ] Parent pointer + generated catalog (`scripts/render-catalog`)
 - [ ] `bash scripts/check-catalog` green
 - [ ] Parent push
 
@@ -52,6 +53,7 @@ Paths relative to **parent incubator root** (`kedoupi/skills`).
 
 ```bash
 bash scripts/list-skills
+bash scripts/render-catalog --check
 bash scripts/check-catalog
 bash scripts/check-skill-layout
 bash scripts/doctor

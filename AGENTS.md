@@ -14,10 +14,10 @@ is a separate GitHub repository registered as a **git submodule**.
 
 | Layer | GitHub | Role |
 | --- | --- | --- |
-| Parent incubator | `kedoupi/skills` | schema, template, meta skill, catalog |
-| Product skill | `kedoupi/<name>-skill` | one publishable skill package |
+| Parent incubator | `kedoupi/skills` | registry, schema, template, meta skill, generated catalog |
+| Product repo | `kedoupi/<name>-skill` | one release unit: a single skill or a skill family |
 
-Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
+Machine registry: [`products.json`](./products.json). Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
 
 ## Naming
 
@@ -26,32 +26,36 @@ Schema baseline: [`schema/skill-repo.md`](./schema/skill-repo.md).
 | Skill package (`SKILL.md` `name`) | `<name>` kebab-case | `lark-push` |
 | GitHub repo + submodule directory | `<name>-skill` | `lark-push-skill` |
 | Install | `npx skills add kedoupi/<name>-skill` | `npx skills add kedoupi/lark-push-skill` |
-| Package path inside child repo | `skills/<name>/` | `lark-push-skill/skills/lark-push/` |
+| Primary package path | `skills/<name>/` | `lark-push-skill/skills/lark-push/` |
+| Optional family entrypoints | `skills/<entrypoint>/` | `tzai-image-skill/skills/tzai-icon/` |
 
 If the user says a name already ending in `-skill`, that is the **repo dir**;
 the package name is the prefix without `-skill`.
 
-Published products (SoT for agents: **root `README.md` catalog**; keep this table short):
+Published products are registered in **`products.json`**. This short table and the
+README catalog are generated views; do not edit their rows by hand.
 
-| Package | Repo/dir | Install |
-| --- | --- | --- |
-| `lark-push` | `lark-push-skill` | `npx skills add kedoupi/lark-push-skill` |
-| `tzai-image` | `tzai-image-skill` | `npx skills add kedoupi/tzai-image-skill -g --all` |
-| `wechat-mp` | `wechat-mp-skill` | `npx skills add kedoupi/wechat-mp-skill` |
+<!-- BEGIN GENERATED PRODUCT TABLE -->
+| Product / primary skill | Type | Repo/dir | Entrypoints | Install |
+| --- | --- | --- | ---: | --- |
+| `lark-push` | `single` | `lark-push-skill` | 1 | `npx skills add kedoupi/lark-push-skill` |
+| `tzai-image` | `family` | `tzai-image-skill` | 18 | `npx skills add kedoupi/tzai-image-skill -g --all` |
+| `wechat-mp` | `single` | `wechat-mp-skill` | 1 | `npx skills add kedoupi/wechat-mp-skill` |
+<!-- END GENERATED PRODUCT TABLE -->
 
 ### Catalog rule (**hard**)
 
-Root `README.md` **Published skills** is the incubator **directory**.  
-**Any add / public version change** of a product skill **must** update that catalog
-(package name, **version = SKILL.md**, one-line purpose, install).  
-Also bump this table when a skill is added or removed.
+`products.json` is the product directory SoT; root `README.md` **Published skills** is
+its public generated view. Any add / retire / entrypoint change updates the registry.
+A primary `SKILL.md` version change updates the generated tables.
 
 ```bash
-bash scripts/check-catalog   # FAIL if disk skill missing or version stale in README
+bash scripts/render-catalog  # update README + AGENTS views
+bash scripts/check-catalog   # registry ↔ disk ↔ submodules ↔ generated views
 bash scripts/doctor          # includes catalog check
 ```
 
-Release flow without catalog update is **incomplete** (schema: `schema/skill-repo.md` § Parent catalog).
+Release flow without registry/catalog validation is **incomplete** (schema: `schema/skill-repo.md` § Product registry).
 
 ## Layout
 
@@ -60,18 +64,21 @@ Skills/                              # parent git: kedoupi/skills
 ├── AGENTS.md                        # THIS FILE
 ├── CLAUDE.md
 ├── README.md
-├── .gitmodules                      # submodule registry
+├── products.json                    # product registry SoT
+├── .gitmodules                      # submodule checkout registry
 ├── .agents/skills/skill-incubator/  # meta skill (not published)
 ├── schema/                          # SoT: skill-repo.md (incl. docs/tests/artifacts)
 ├── scripts/
 │   ├── new-skill.sh                 # scaffold → <name>-skill/
 │   ├── register-submodule.sh
-│   ├── check-catalog
+│   ├── check-catalog                # registry + generated views
+│   ├── render-catalog
 │   ├── check-skill-layout           # docs / tests / artifacts separation
 │   └── doctor                       # includes catalog + layout
 ├── _template/
 └── <name>-skill/                    # submodule → kedoupi/<name>-skill
-    ├── skills/<name>/               # installable package only
+    ├── skills/<name>/               # primary package
+    ├── skills/<entrypoint>/         # family facades only (optional)
     ├── tests/                       # offline CI + live *specs*
     ├── docs/                        # guides + curated screenshots
     └── artifacts/                   # generated outputs (optional)
@@ -133,9 +140,8 @@ Prefer **skill-incubator → New skill**. Short form:
    bash scripts/register-submodule.sh <name>-skill
    ```
 
-6. **Catalog (mandatory for public):** update root `README.md` Published skills
-   (name, version, purpose, install) + this file’s short table; run
-   `bash scripts/check-catalog`.
+6. **Registry (mandatory for public):** add the product to `products.json`, run
+   `bash scripts/render-catalog`, then `bash scripts/check-catalog`.
 
 ## Editing an existing skill
 
@@ -146,10 +152,10 @@ Prefer **skill-incubator → New skill**. Short form:
 
    ```bash
    git add <name>-skill
-   # if version/purpose changed for users:
-   #   edit README.md Published skills + AGENTS.md table
-   git add README.md AGENTS.md
-   git commit -m "chore: bump <name>-skill (+ catalog if needed)"
+   # if product purpose/entrypoints changed: edit products.json first
+   bash scripts/render-catalog
+   git add products.json README.md AGENTS.md
+   git commit -m "chore: bump <name>-skill (+ generated catalog if needed)"
    bash scripts/check-catalog
    ```
 
@@ -157,6 +163,7 @@ Inventory / health:
 
 ```bash
 bash scripts/list-skills
+bash scripts/render-catalog --check
 bash scripts/check-catalog
 bash scripts/check-skill-layout
 bash scripts/doctor
@@ -168,7 +175,7 @@ bash scripts/link-agent-skills
 
 1. In child: tests green, tag `vX.Y.Z`, push tag.
 2. `npx skills add kedoupi/<name>-skill --list`
-3. Parent: bump submodule pointer + **README catalog version** (+ AGENTS table).
+3. Parent: bump submodule pointer; run `bash scripts/render-catalog`.
 4. `bash scripts/check-catalog` must pass before considering release done.
 
 ## Cross-skill conventions
@@ -182,10 +189,10 @@ bash scripts/link-agent-skills
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`)
 - **Tests**: `tests/run.sh` offline before publish
 - **Housekeeping**: no one-off debug scripts at incubator root; secrets never in packages
-- **Parent vs child**: parent holds schema/meta; child holds one product skill
-- **Catalog**: every product `*-skill` on disk must appear in root README with matching version
+- **Parent vs child**: parent holds registry/schema/meta; each child is one release unit (`single` or `family`)
+- **Catalog**: every product and installable entrypoint must match `products.json`; README/AGENTS tables are generated
 - **Layout**: `docs/` / `tests/` / `artifacts/` separation; no media under `tests/`; no `docs/benchmarks/`
-Full detail: [`schema/skill-repo.md`](./schema/skill-repo.md) § Parent catalog.
+Full detail: [`schema/skill-repo.md`](./schema/skill-repo.md) § Product registry.
 
 ## Multi-agent file convention
 

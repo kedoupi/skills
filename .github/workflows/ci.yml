@@ -1,0 +1,42 @@
+name: incubator-ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  control-plane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate registry, catalog, layout, and submodules
+        run: bash scripts/doctor
+      - name: Verify generated catalog is current
+        run: bash scripts/render-catalog --check
+
+  product-offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run every product offline suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for repo in *-skill; do
+            [[ -d "$repo" ]] || continue
+            echo "== $repo =="
+            bash "$repo/tests/run.sh"
+          done

@@ -3,8 +3,9 @@
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-# After new-skill.sh, package name matches repo folder name.
-NAME="$(basename "$ROOT")"
+# After new-skill.sh, repo=<name>-skill while package/CLI=<name>.
+REPO_NAME="$(basename "$ROOT")"
+NAME="${REPO_NAME%-skill}"
 BIN="${ROOT}/skills/${NAME}/scripts/${NAME}"
 
 if [[ ! -x "$BIN" ]]; then

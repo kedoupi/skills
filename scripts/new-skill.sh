@@ -194,7 +194,10 @@ Next:
        git push -u origin main
   6. Register as submodule of parent incubator (from incubator root):
        bash scripts/register-submodule.sh ${REPO_DIR}
-  7. Update incubator README catalog when publishing
+  7. Add a type=single entry to products.json, then:
+       bash scripts/render-catalog
+       bash scripts/check-catalog
 
+Registry: ${INCUBATOR_ROOT}/products.json
 Schema: ${INCUBATOR_ROOT}/schema/skill-repo.md
 EOF

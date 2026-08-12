@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Render README.md and AGENTS.md product tables from products.json + primary SKILL.md versions.
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+exec python3 "$ROOT/scripts/product_registry.py" render "$@"

@@ -141,6 +141,9 @@ Registered: ${REPO_DIR}
   url: ${URL}
 
 Next:
+  # add/update this product in products.json, then:
+  bash scripts/render-catalog
+  bash scripts/check-catalog
   git push origin main          # parent incubator
   # colleagues:
   git clone --recurse-submodules git@github.com:${OWNER}/skills.git
