@@ -74,6 +74,36 @@ Source = **config files only**, not shell exports.
 - [ ] Docs: “you usually do **not** need to export secrets in your shell”  
 - [ ] Offline test: migrate copy + init target kedoupi  
 
+## Onboarding & when to ask for keys (Agent + human)
+
+**Install ≠ configure.** Package install only delivers code. Secrets stay optional until a
+capability that needs them is requested.
+
+### When to prompt (agents)
+
+| User intent | Prompt for config? |
+| --- | --- |
+| Write / preview only (e.g. wechat-mp mode A) | **No** — proceed |
+| Paid image gen, draft push, Feishu send | **Yes** — if `doctor` / `which-config` shows missing keys |
+| User asks “is it set up?” / “doctor” | Yes — run checklist + print copy-paste `init` |
+| Unrelated chat after install | **No** |
+
+### How to prompt
+
+1. Why this turn needs the key  
+2. Public key names + recommended path `~/.config/kedoupi/<skill>/config.env`  
+3. **Copy-paste `init` command** (placeholders user can edit)  
+4. What works without config (degrade path)
+
+Never edit the user’s shell rc. Prefer `init` writing the kedoupi file.
+
+### After `npx skills add` (humans)
+
+The skills CLI does not run package hooks, so README should always show a short
+**After install** block with `doctor` + ready-to-edit `init` lines. Agents should
+treat “I just installed X” as: explain zero-config capabilities first, then offer
+the same `init` block if the user wants full features.
+
 ## Optional local cleanup (after migrate)
 
 When `~/.config/kedoupi/<name>/config.env` exists and is known-good:

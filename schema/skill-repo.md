@@ -211,14 +211,21 @@ Body sections (recommended order):
 
 1. One-paragraph behavior summary  
 2. Prerequisites / auth  
-3. Locating the helper  
-4. Config (if any)  
-5. Safety / confirmation rules  
-6. Usage examples (include `--dry-run`)  
-7. Key CLI options  
-8. Troubleshooting  
+3. **Onboarding** (when to ask for keys; install ≠ configure)  
+4. Locating the helper  
+5. Config (if any) — preferred path `~/.config/kedoupi/<name>/`  
+6. Safety / confirmation rules  
+7. Usage examples (include `--dry-run`)  
+8. Key CLI options  
+9. Troubleshooting  
 
 Keep under ~500 lines; link out for long references.
+
+**Onboarding rule:** Do not solicit secrets merely because the skill was installed.
+Solicit only when the user’s request crosses a credential boundary (paid API, draft
+push, chat send) or they ask for environment check. Always offer a **copy-paste
+`init` command** and a zero-config degrade path. Detail:
+[`references/durable-config.md`](./references/durable-config.md) § Onboarding.
 
 ## Config schema (when needed) — **kedoupi brand + open-source**
 
