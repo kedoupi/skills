@@ -30,13 +30,26 @@ git submodule update --init --recursive
 | **`wechat-mp`** | `0.2.1` | `single` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
 <!-- END GENERATED PRODUCT CATALOG -->
 
+> **终端用户**：下面是「安装 → 配置 → 第一次用」。  
+> **配置约定**：密钥写到 `~/.config/kedoupi/<skill>/config.env`（`init` 默认），**不要**只写在 skill 包目录或 `~/.zshrc`。  
+> **安装 ≠ 配置**：`npx skills add` 只装代码；真正发消息 / 生图 / 推草稿前再 `init`。
+
 ### `lark-push`
 
 - 用途：向配置好的飞书群发送进度/日报/发布类通知  
 - 文档：[README](https://github.com/kedoupi/lark-push-skill#readme) · [中文](https://github.com/kedoupi/lark-push-skill/blob/main/README.zh-CN.md)
 
 ```bash
-npx skills add kedoupi/lark-push-skill
+npx skills add kedoupi/lark-push-skill -g --all
+
+SK=~/.agents/skills/lark-push
+bash $SK/scripts/lark-push doctor
+# 还需要：npm i -g @larksuite/cli  +  lark-cli 鉴权
+bash $SK/scripts/lark-push init --chat-id 'oc_YOUR_CHAT_ID'
+# → ~/.config/kedoupi/lark-push/config.env
+
+bash $SK/scripts/lark-push --dry-run --kind notice --title "hello" --body "ok"
+bash $SK/scripts/lark-push --kind notice --title "hello" --body "ok"
 ```
 
 ### `tzai-image`
@@ -50,14 +63,17 @@ npx skills add kedoupi/lark-push-skill
 # 引擎 + 全部 Plan C skill → 各 Agent
 npx skills add kedoupi/tzai-image-skill -g --all
 
-# 可选：把 commands/*.md 链到 Claude/Grok/Cursor 等 commands 目录
-git clone https://github.com/kedoupi/tzai-image-skill.git
-cd tzai-image-skill && bash scripts/install-slash-commands.sh
+E=~/.agents/skills/tzai-image/scripts/tzai-image
+bash $E doctor
+# Key：https://tzai.kdp.cool/console
+bash $E init --api-key 'sk-YOUR_TOKEN'
+# → ~/.config/kedoupi/tzai-image/config.env
 
-# 配置 Key（二选一）
-export TZAI_API_KEY='sk-...'
-# 或 durable：
-bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
+bash $E icon --prompt "spark for AI coding app" --image ./icon.png
+
+# 可选：把 commands/*.md 链到 Claude/Grok/Cursor 等 commands 目录
+# git clone https://github.com/kedoupi/tzai-image-skill.git && cd tzai-image-skill
+# bash scripts/install-slash-commands.sh
 ```
 
 常用斜杠示例：`/tzai-image` `/tzai-xhs` `/tzai-xhs-cover` `/tzai-flowchart` `/tzai-architecture` `/tzai-icon` `/tzai-cover` …
@@ -69,25 +85,34 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 - 文档：[README](https://github.com/kedoupi/wechat-mp-skill#readme) · [中文](https://github.com/kedoupi/wechat-mp-skill/blob/main/README.zh-CN.md)
 
 ```bash
-npx skills add kedoupi/wechat-mp-skill
+npx skills add kedoupi/wechat-mp-skill -g --all
 # 常见组合：
 # npx skills add kedoupi/tzai-image-skill -g --all
-# npx skills add kedoupi/lark-push-skill
+# npx skills add kedoupi/lark-push-skill -g --all
+
+SK=~/.agents/skills/wechat-mp
+bash $SK/scripts/wechat-mp doctor
+bash $SK/scripts/wechat-mp init-style          # 可选文风
+# 仅草稿箱需要：
+# bash $SK/scripts/wechat-mp init --appid 'wx…' --secret '…'
+
+# 在内容项目根目录：
+bash $SK/scripts/wechat-mp new-out --title "选题"
+bash $SK/scripts/wechat-mp preview --dir ./wechat-mp-out/<slug>
 ```
 
 ### 套件怎么拼（单独 / 组合）
 
-| 你想做的事 | 建议安装 |
-| --- | --- |
-| 只生图 | `tzai-image` |
-| 只飞书通知 | `lark-push` |
-| 只写公众号文稿 | `wechat-mp` |
-| 公众号 + 封面图 | `wechat-mp` + `tzai-image` |
-| 成稿后飞书知会 | 再加 `lark-push` |
-| 推微信草稿箱 | `wechat-mp init`（appid/secret） |
+| 你想做的事 | 建议安装 | 配置 |
+| --- | --- | --- |
+| 只生图 | `tzai-image` | `tzai-image init --api-key …` |
+| 只飞书通知 | `lark-push` | `lark-cli` + `lark-push init --chat-id …` |
+| 只写公众号文稿 | `wechat-mp` | 可不配；可选 `init-style` |
+| 公众号 + 封面图 | `wechat-mp` + `tzai-image` | 生图需 tzai key |
+| 成稿后飞书知会 | 再加 `lark-push` | 各自 `init` |
+| 推微信草稿箱 | `wechat-mp` | `wechat-mp init --appid … --secret …` |
 
 各 skill **单职责、密钥分治**；组合靠 Agent 编排与 `manifest.json` 交接，不硬捆绑安装。
-
 ---
 
 ## Naming

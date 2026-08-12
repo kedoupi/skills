@@ -2,10 +2,26 @@
 
 [One-line description of what this skill does.]
 
+[English](./README.md) | [简体中文](./README.zh-CN.md)
+
 ## Install
 
 ```bash
 npx skills add <owner>/<repo-name> -g --all
+```
+
+`npx skills add` only installs code — **install ≠ configure**.
+
+## After install (copy-paste)
+
+```bash
+SK=~/.agents/skills/<skill-name>
+
+bash $SK/scripts/<skill-name> doctor
+
+# Recommended durable config (survives npx skills update; not ~/.zshrc):
+bash $SK/scripts/<skill-name> init …   # skill-specific flags
+# → ~/.config/kedoupi/<skill-name>/config.env
 ```
 
 ## Prerequisites
@@ -15,15 +31,23 @@ npx skills add <owner>/<repo-name> -g --all
 ## Quick start
 
 ```bash
-# One-time config after install
-bash <skill-dir>/scripts/<skill-name> init --chat-id <id>
+# Preview (local only — no side effects when supported)
+bash $SK/scripts/<skill-name> --dry-run …
 
-# Preview (local only — no side effects)
-bash <skill-dir>/scripts/<skill-name> --dry-run --title "Hello" --body "- item"
-
-# Run
-bash <skill-dir>/scripts/<skill-name> --title "Hello" --body "World"
+# Real run
+bash $SK/scripts/<skill-name> …
 ```
+
+## Configuration
+
+| Path | Role |
+| --- | --- |
+| `~/.config/kedoupi/<skill-name>/config.env` | **Recommended** (`init` default) |
+| `~/.agents/skills/<skill-name>/` | Package only (wiped on update) |
+| shell `export` | CI only — prefer not editing `~/.zshrc` |
+
+Public env keys use a skill prefix (e.g. `LARK_PUSH_*` / `TZAI_*` / `WECHAT_MP_*`).  
+See `skills/<skill-name>/config.example.env`.
 
 ## Features
 
@@ -41,6 +65,7 @@ skills/
     templates/
 tests/
   run.sh
+docs/
 ```
 
 ## Development
