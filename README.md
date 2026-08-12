@@ -34,9 +34,9 @@ composed by an agent: `wechat-mp` can request visuals from `tzai-image`, while
 <!-- BEGIN GENERATED PRODUCT CATALOG -->
 | Skill product | Version | Type | 说明 | Repo | Install |
 | --- | --- | --- | --- | --- | --- |
-| **`lark-push`** | `1.4.1` | `single` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.7.1` | `family` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `见下` |
-| **`wechat-mp`** | `0.2.1` | `single` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
+| **`lark-push`** | `1.5.0` | `single` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
+| **`tzai-image`** | `0.7.4` | `family` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `见下` |
+| **`wechat-mp`** | `0.3.0` | `single` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
 <!-- END GENERATED PRODUCT CATALOG -->
 
 > **终端用户**：下面是「安装 → 配置 → 第一次用」。  
