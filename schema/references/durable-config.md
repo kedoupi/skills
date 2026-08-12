@@ -73,3 +73,16 @@ Source = **config files only**, not shell exports.
 - [ ] `which-config` lists kedoupi path first  
 - [ ] Docs: “you usually do **not** need to export secrets in your shell”  
 - [ ] Offline test: migrate copy + init target kedoupi  
+
+## Optional local cleanup (after migrate)
+
+When `~/.config/kedoupi/<name>/config.env` exists and is known-good:
+
+| Safe to remove | Keep |
+| --- | --- |
+| Duplicate `~/.agents/skills/.skill-data/<name>/config.env` (identical copy) | `~/.config/kedoupi/…` |
+| One-off demo dirs (`~/tmp-*-demo`, stray `~/wechat-mp-out` not in a content project) | Installed skill packages under `~/.agents/skills/<name>/` |
+| Empty `.skill-data` trees | Agent **symlinks** (`~/.claude/skills/…` → `.agents`) — discovery, not junk |
+
+Do **not** delete shell rc / global env vars as part of skill cleanup.  
+Do **not** remove multi-agent symlinks created by `npx skills add -g --all`.
