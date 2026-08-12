@@ -20,14 +20,27 @@ exists, it should only point here.
 
 ```text
 skills/
-  <skill-name>/        # skill package (discovered by skills CLI)
-    SKILL.md           # required skill definition (version source of truth)
+  <skill-name>/        # installable package (skills CLI discovers this)
+    SKILL.md
     config.example.env
-    scripts/           # executable helpers
-    templates/         # optional body templates
+    scripts/
+    templates/
+    references/        # optional
 tests/
-  run.sh               # offline self-test
+  README.md
+  run.sh               # offline self-test (required)
+  fixtures/            # optional
+  live/<suite>/        # optional live *specs* only
+docs/
+  README.md            # when docs/ is used
+  screenshots/         # curated gallery only
+artifacts/             # optional generated outputs
+  README.md
+  live/<suite>/<version>/
 ```
+
+**Separation:** `docs/` guides · `tests/` CI + live specs · `artifacts/` generated outputs.  
+No media under `tests/`; no `docs/benchmarks/`. Incubator SoT: `schema/skill-repo.md`.
 
 ## Editing rules
 

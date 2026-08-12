@@ -7,7 +7,11 @@ SKILL_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 SKILL_NAME="$(basename -- "$SKILL_ROOT")"
 SKILLS_PARENT="$(dirname -- "$SKILL_ROOT")"
 
-# Durable config lives next to the skill package, not inside it.
+# Recommended brand+XDG config (default for init)
+KEDOUPI_CONFIG_DIR="${HOME}/.config/kedoupi/${SKILL_NAME}"
+KEDOUPI_CONFIG_FILE="${KEDOUPI_CONFIG_DIR}/config.env"
+
+# Legacy install-adjacent durable (still read; may migrate once)
 DURABLE_CONFIG_DIR="${SKILLS_PARENT}/.skill-data/${SKILL_NAME}"
 DURABLE_CONFIG_FILE="${DURABLE_CONFIG_DIR}/config.env"
 
@@ -64,12 +68,31 @@ load_env_file() {
   fi
 }
 
+ensure_kedoupi_config() {
+  if [[ -f "$KEDOUPI_CONFIG_FILE" ]]; then
+    return 0
+  fi
+  local src
+  for src in "$DURABLE_CONFIG_FILE" "$GLOBAL_SHARED_CONFIG_FILE" "$XDG_CONFIG_FILE"; do
+    if [[ -f "$src" && -s "$src" ]]; then
+      mkdir -p "$KEDOUPI_CONFIG_DIR"
+      cp "$src" "$KEDOUPI_CONFIG_FILE"
+      chmod 600 "$KEDOUPI_CONFIG_FILE" 2>/dev/null || true
+      echo "${SKILL_NAME}: migrated config → ${KEDOUPI_CONFIG_FILE}" >&2
+      echo "  (from ${src})" >&2
+      return 0
+    fi
+  done
+}
+
 load_all_configs() {
+  ensure_kedoupi_config
   load_env_file "$XDG_CONFIG_FILE"
   load_env_file "$GLOBAL_SHARED_CONFIG_FILE"
   if [[ "$DURABLE_CONFIG_FILE" != "$GLOBAL_SHARED_CONFIG_FILE" ]]; then
     load_env_file "$DURABLE_CONFIG_FILE"
   fi
+  load_env_file "$KEDOUPI_CONFIG_FILE"
   load_env_file "$LOCAL_CONFIG_FILE"
   if [[ -n "${SKILL_ENV_CONFIG:-}" ]]; then
     load_env_file "$SKILL_ENV_CONFIG"
@@ -80,8 +103,9 @@ print_config_paths() {
   cat <<EOF
 Skill root:           ${SKILL_ROOT}
 Version:              $(skill_version)
-Durable config:       ${DURABLE_CONFIG_FILE}$([[ -f "$DURABLE_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
-Global shared config: ${GLOBAL_SHARED_CONFIG_FILE}$([[ -f "$GLOBAL_SHARED_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
+Kedoupi config:       ${KEDOUPI_CONFIG_FILE}$([[ -f "$KEDOUPI_CONFIG_FILE" ]] && echo "  [exists · recommended]" || echo "  [missing]")
+Legacy durable:       ${DURABLE_CONFIG_FILE}$([[ -f "$DURABLE_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
+Global shared:        ${GLOBAL_SHARED_CONFIG_FILE}$([[ -f "$GLOBAL_SHARED_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
 Local (in skill):     ${LOCAL_CONFIG_FILE}$([[ -f "$LOCAL_CONFIG_FILE" ]] && echo "  [exists · wiped on skills update]" || echo "  [missing]")
 XDG legacy:           ${XDG_CONFIG_FILE}$([[ -f "$XDG_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
 Explicit override:    ${SKILL_ENV_CONFIG:-"(unset)"}
@@ -97,7 +121,7 @@ cmd_init() {
   local as_identity="bot"
   local footer="via ${SKILL_NAME}"
   local force=0
-  local target="durable"
+  local target="kedoupi"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -129,6 +153,7 @@ EOF
 
   local out_file
   case "$target" in
+    kedoupi|default) out_file="$KEDOUPI_CONFIG_FILE" ;;
     durable) out_file="$DURABLE_CONFIG_FILE" ;;
     global) out_file="$GLOBAL_SHARED_CONFIG_FILE" ;;
     local) out_file="$LOCAL_CONFIG_FILE" ;;

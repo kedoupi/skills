@@ -23,9 +23,9 @@ git submodule update --init --recursive
 
 | Skill package | Version | 说明 | Repo | Install |
 | --- | --- | --- | --- | --- |
-| **`lark-push`** | `1.3.0` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.6.1` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
-| **`wechat-mp`** | `0.1.3` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
+| **`lark-push`** | `1.4.0` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
+| **`tzai-image`** | `0.7.0` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | 见下 |
+| **`wechat-mp`** | `0.2.0` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
 
 ### `lark-push`
 
@@ -116,7 +116,9 @@ idea
 | [`scripts/new-skill.sh`](./scripts/new-skill.sh) | Scaffold `./<name>-skill/` |
 | [`scripts/register-submodule.sh`](./scripts/register-submodule.sh) | `git submodule add` helper |
 | [`scripts/list-skills`](./scripts/list-skills) | List product skill dirs / remotes |
-| [`scripts/doctor`](./scripts/doctor) | Incubator health check |
+| [`scripts/check-catalog`](./scripts/check-catalog) | README catalog ↔ package versions |
+| [`scripts/check-skill-layout`](./scripts/check-skill-layout) | `docs/` · `tests/` · `artifacts/` separation |
+| [`scripts/doctor`](./scripts/doctor) | Incubator health (catalog + layout + …) |
 | [`scripts/link-agent-skills`](./scripts/link-agent-skills) | Symlink meta skill for Claude/Grok |
 | [`.agents/skills/skill-incubator/`](./.agents/skills/skill-incubator/) | Meta skill: create / edit / release |
 | [`AGENTS.md`](./AGENTS.md) | Agent contract SoT |
@@ -134,8 +136,9 @@ idea
 | 下线 / 改名 | 删改对应行 |
 
 ```bash
-bash scripts/check-catalog   # 磁盘 *-skill ↔ README 包名与版本
-bash scripts/doctor          # 含目录检查
+bash scripts/check-catalog        # 磁盘 *-skill ↔ README 包名与版本
+bash scripts/check-skill-layout   # docs / tests / artifacts 分离
+bash scripts/doctor               # 含 catalog + layout
 ```
 
 流程：

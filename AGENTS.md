@@ -62,15 +62,34 @@ Skills/                              # parent git: kedoupi/skills
 ├── README.md
 ├── .gitmodules                      # submodule registry
 ├── .agents/skills/skill-incubator/  # meta skill (not published)
-├── schema/
+├── schema/                          # SoT: skill-repo.md (incl. docs/tests/artifacts)
 ├── scripts/
 │   ├── new-skill.sh                 # scaffold → <name>-skill/
-│   └── register-submodule.sh        # git submodule add
+│   ├── register-submodule.sh
+│   ├── check-catalog
+│   ├── check-skill-layout           # docs / tests / artifacts separation
+│   └── doctor                       # includes catalog + layout
 ├── _template/
 └── <name>-skill/                    # submodule → kedoupi/<name>-skill
-    ├── AGENTS.md
-    ├── skills/<name>/               # installable package
-    └── tests/
+    ├── skills/<name>/               # installable package only
+    ├── tests/                       # offline CI + live *specs*
+    ├── docs/                        # guides + curated screenshots
+    └── artifacts/                   # generated outputs (optional)
+```
+
+**docs / tests / artifacts** (hard separation — full rules in
+[`schema/skill-repo.md`](./schema/skill-repo.md)):
+
+| Tree | Holds | Not for |
+| --- | --- | --- |
+| `skills/` | Installable package | Benchmark dumps |
+| `docs/` | Guides, architecture, curated `screenshots/` | Raw live A/B pixels |
+| `tests/` | `run.sh`, fixtures, `live/<suite>/` prompts | PNG / media binaries |
+| `artifacts/` | Paid/live outputs + reports | Skill source of truth |
+
+```bash
+bash scripts/check-skill-layout
+bash scripts/doctor
 ```
 
 ## Incubator workflows (meta skill)
@@ -139,6 +158,7 @@ Inventory / health:
 ```bash
 bash scripts/list-skills
 bash scripts/check-catalog
+bash scripts/check-skill-layout
 bash scripts/doctor
 # optional: Claude/Grok vendor discovery
 bash scripts/link-agent-skills
@@ -154,7 +174,7 @@ bash scripts/link-agent-skills
 ## Cross-skill conventions
 
 - **SKILL.md**: under ~500 lines; strong `description` triggers; version is SoT
-- **Config**: durable at `<skills-parent>/.skill-data/<name>/config.env`
+- **Config**: recommended `~/.config/kedoupi/<name>/config.env` (brand+XDG); legacy `.skill-data/` still read + one-shot migrate. Public keys only (`LARK_PUSH_*` / `TZAI_*` / `WECHAT_MP_*`). Never rewrite the user's shell environment. See `schema/references/durable-config.md`
 - **Scripts**: `pwd -P`; minimize deps; bash + existing CLIs preferred
 - **Dry-run**: offline / no side effects
 - **CLI values**: may start with `-` (markdown lists)
@@ -164,7 +184,7 @@ bash scripts/link-agent-skills
 - **Housekeeping**: no one-off debug scripts at incubator root; secrets never in packages
 - **Parent vs child**: parent holds schema/meta; child holds one product skill
 - **Catalog**: every product `*-skill` on disk must appear in root README with matching version
-
+- **Layout**: `docs/` / `tests/` / `artifacts/` separation; no media under `tests/`; no `docs/benchmarks/`
 Full detail: [`schema/skill-repo.md`](./schema/skill-repo.md) § Parent catalog.
 
 ## Multi-agent file convention

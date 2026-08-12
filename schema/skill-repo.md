@@ -122,11 +122,52 @@ Skills/
 │       ├── SKILL.md               # required — agent-facing definition
 │       ├── config.example.env     # if skill needs durable config
 │       ├── scripts/               # executables (pwd -P safe)
+│       ├── references/            # optional long agent references
 │       └── templates/             # optional body/prompt templates
-├── tests/
-│   └── run.sh                     # offline self-test (required for published skills)
-├── docs/                          # optional screenshots / guides
+├── tests/                         # offline CI + optional live *specs*
+│   ├── README.md                  # required when tests/ has more than run.sh
+│   ├── run.sh                     # offline self-test (required for published skills)
+│   ├── fixtures/                  # deterministic offline fixtures
+│   └── live/<suite>/              # live evaluation specs only (text; no binaries)
+├── docs/                          # human guides + curated gallery (optional tree)
+│   ├── README.md                  # required when docs/ exists
+│   ├── screenshots/               # curated README/gallery assets only
+│   ├── architecture/              # design / roadmap (optional)
+│   └── research/                  # external research notes (optional)
+├── artifacts/                     # generated outputs (optional; not installable)
+│   ├── README.md                  # required when artifacts/ exists
+│   └── live/<suite>/<version>/    # e.g. pairs/ + report.md
+├── scripts/                       # repo tooling (optional; not the skill package)
 └── .github/workflows/ci.yml       # recommended
+```
+
+### docs / tests / artifacts (**hard separation**)
+
+These three trees must not blur. SoT for agents: this section + `scripts/check-skill-layout`.
+
+| Tree | Role | Network / paid | Installable? |
+| --- | --- | --- | --- |
+| **`skills/<name>/`** | What `npx skills add` installs | N/A | **Yes** |
+| **`docs/`** | Human guides, architecture, **curated** gallery | No | No |
+| **`tests/`** | Offline CI + **live case definitions** (prompts, rubrics, fixtures) | Offline required; live optional | No |
+| **`artifacts/`** | **Generated** outputs (images, HTML dumps, live reports) | Often yes | No |
+
+**Rules**
+
+1. **Specs vs pixels:** live prompts/rubrics live under `tests/live/<suite>/`; generated images and run reports under `artifacts/live/<suite>/<version>/`.
+2. **Gallery vs dumps:** `docs/screenshots/` is for README marketing/samples only — not raw A/B benchmark dumps.
+3. **No binaries in tests:** do not store `.png` / `.jpg` / large media under `tests/`.
+4. **No `docs/benchmarks/`:** deprecated; use `tests/live/` + `artifacts/live/`.
+5. **Indexes:** if `docs/` exists → `docs/README.md`; if `artifacts/` exists → `artifacts/README.md`; if `tests/` has anything beyond `run.sh` → `tests/README.md`.
+6. **Scratch:** local experiments → `artifacts/live/_scratch/` (gitignore recommended).
+7. **Article/user content** (e.g. wechat drafts) belongs in the **user's project**, never under the skill package or incubator root.
+
+**Enforcement**
+
+```bash
+bash scripts/check-skill-layout          # all product *-skill dirs
+bash scripts/check-skill-layout lark-push-skill
+bash scripts/doctor                      # includes layout + catalog
 ```
 
 ### Forbidden / discouraged
@@ -138,7 +179,8 @@ Skills/
 | Relative links from installed package to repo-root README | Broken after install |
 | `--dry-run` that requires live auth | Agents/CI/sandboxes can't preview |
 | Full project rules duplicated in both `AGENTS.md` and `CLAUDE.md` | Files drift; agents disagree |
-
+| Live PNGs under `docs/benchmarks/` or `tests/` | Breaks docs/tests/artifacts separation |
+| Putting installable logic only under `scripts/` at repo root | CLI discovers `skills/<name>/` only |
 ### Multi-agent instruction files
 
 | File | Role |
@@ -178,31 +220,72 @@ Body sections (recommended order):
 
 Keep under ~500 lines; link out for long references.
 
-## Config schema (when needed)
+## Config schema (when needed) — **kedoupi brand + open-source**
 
-Durable path (survives update):
+Secrets and durable settings **never** live only inside the installable package
+(`npx skills update` wipes it). Prefer **config files** over editing the user's
+shell profile / global environment.
+
+### What goes where
+
+| Kind | Location | Notes |
+| --- | --- | --- |
+| Skill package (code) | `~/.agents/skills/<name>/` (or agent vendor paths) | Install via `npx skills add` — **not** under `~/.config` |
+| **Recommended config** | `~/.config/kedoupi/<name>/config.env` | Brand + XDG; default `init` target |
+| Extra files (style, etc.) | `~/.config/kedoupi/<name>/…` | e.g. `style.yaml` |
+| Legacy suite durable | `~/.agents/skills/.skill-data/<name>/config.env` | Still **read**; may auto-migrate once |
+| Install-adjacent durable | `<skills-parent>/.skill-data/<name>/config.env` | Still **read** |
+| Per-skill XDG legacy | `~/.config/<name>/config.env` | Still **read** |
+| In-package local | `<skill-root>/config.local.env` | Optional; wiped on update |
+| User content / history | Project CWD (e.g. `./wechat-mp-out/`) | Never incubator root |
 
 ```text
-<skills-parent>/.skill-data/<skill-name>/config.env
+~/.config/kedoupi/
+  lark-push/config.env
+  tzai-image/config.env
+  wechat-mp/config.env
+  wechat-mp/style.yaml
 ```
 
-Load order (later wins):
+### Load order (later wins)
 
-1. `~/.config/<skill-name>/config.env` (legacy optional)
-2. `~/.agents/skills/.skill-data/<skill-name>/config.env` (shared global)
-3. `<skills-parent>/.skill-data/<skill-name>/config.env` (install-local durable)
-4. `<skill-root>/config.local.env` (wiped on update)
-5. `$<ENV_PREFIX>_CONFIG` explicit file
-6. CLI flags
+1. `~/.config/<name>/config.env` (legacy XDG)
+2. `~/.agents/skills/.skill-data/<name>/config.env`
+3. `<skills-parent>/.skill-data/<name>/config.env`
+4. **`~/.config/kedoupi/<name>/config.env`** (recommended — wins among stock files)
+5. `<skill-root>/config.local.env` (wiped on update)
+6. `$<PREFIX>_CONFIG` explicit file path
+7. Process environment / CLI flags (optional override for CI; **do not** teach users to put secrets in `~/.zshrc`)
 
-`init` must:
+### Auto-migrate (once)
 
-- write durable config by default
+On `load` / `doctor` / `init` (before write):
+
+- If **`~/.config/kedoupi/<name>/config.env` is missing**, and any **legacy config file** exists with content → **copy** that file to the kedoupi path (`chmod 600`), print one stderr line.
+- **Only copy from existing config files** — never rewrite the user's global shell environment.
+- Prefer standard public keys only (`LARK_PUSH_*`, `TZAI_*`, `WECHAT_MP_*`, …). Do not invent private host-only names as the open-source API.
+
+### `init` must
+
+- Default **`--target kedoupi`** → `~/.config/kedoupi/<name>/config.env`
+- Still support `--target durable|global|local` for power users / tests
 - `chmod 600`
-- shell-quote values (`printf '%q'`)
-- support `--force`
+- Quote values safely (`printf '%q'` or allowlisted KEY=value writer)
+- Support `--force`
+- Document keys in `config.example.env` with the **public** prefix only
 
-Env var naming: `<SCREAMING_SKILL_NAME>_CHAT_ID` etc. (example: `LARK_PUSH_CHAT_ID`).
+### Env var naming (public)
+
+| Rule | Example |
+| --- | --- |
+| Prefix = screaming package name | `lark-push` → `LARK_PUSH_*` |
+| | `tzai-image` → `TZAI_*` (engine family) |
+| | `wechat-mp` → `WECHAT_MP_*` |
+| Explicit config path | `LARK_PUSH_CONFIG`, `TZAI_IMAGE_CONFIG`, `WECHAT_MP_CONFIG` |
+
+Agents **must not** mutate the user's shell rc files to “make it work”. Use `init` + kedoupi config files.
+
+Full narrative for authors: [`schema/references/durable-config.md`](./references/durable-config.md).
 
 ## Script schema
 
@@ -234,6 +317,18 @@ For any skill that sends messages, mutates shared systems, or spends money:
 - `--dry-run` happy path
 - at least one edge case (e.g. leading `-` body, missing required config)
 
+### Live evaluation (optional)
+
+When a skill needs paid/live quality checks (images, remote APIs):
+
+| Item | Location |
+| --- | --- |
+| Case table / prompts | `tests/live/<suite>/cases.tsv` (or `.md`) |
+| Scoring rubric | `tests/live/<suite>/rubric.md` |
+| Outputs + report | `artifacts/live/<suite>/<version>/` |
+| Runner (optional) | repo `scripts/run-live-compare.sh` or suite-specific |
+
+Live suites must not be required for default `tests/run.sh` (CI offline).
 ## skills.sh.json (optional)
 
 ```json
