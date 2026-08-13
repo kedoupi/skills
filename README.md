@@ -65,7 +65,7 @@ bash $SK/scripts/lark-push --kind notice --title "hello" --body "ok"
 
 - 用途：自然语言驱动的创作 Agent，经 [TaoziAPI](https://tzai.kdp.cool) 规划并生成单图或完整视觉项目；默认模型 **`gpt-image-2`**
 - 形态：27 个结果型工作流 + 22 个视觉 Pattern + 30 个底层 kind；Plan C 斜杠保留为专家快捷入口
-- 能力摘要：UI 流程、小红书/公众号内容包、文章配图、品牌、商品发布、Campaign、知识图、PPT、角色 IP，以及方案/首图两阶段确认
+- 能力摘要：UI 流程、小红书笔记/图卡、公众号配图（正文走 wechat-mp）、文章配图、品牌、商品发布、Campaign、知识图、PPT、角色 IP，以及方案/首图两阶段确认
 - 文档：[README](https://github.com/kedoupi/tzai-image-skill#readme) · [中文](https://github.com/kedoupi/tzai-image-skill/blob/main/README.zh-CN.md) · [场景表](https://github.com/kedoupi/tzai-image-skill/blob/main/docs/SCENES.md)
 
 ```bash
