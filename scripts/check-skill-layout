@@ -126,6 +126,19 @@ check_one() {
     ok "$base: artifacts/ optional (absent)"
   fi
 
+  # Config files must not be sourced as shell (schema/references/durable-config.md)
+  if [[ -d "$skill_dir/skills" ]]; then
+    local sourced
+    sourced="$(grep -R -nE --exclude-dir='.git' \
+      'source[[:space:]]+"(\$file|\$KEDOUPI_CONFIG_FILE|\$LOCAL_CONFIG_FILE|\$DURABLE_CONFIG_FILE|\$XDG_CONFIG_FILE|\$GLOBAL_SHARED_CONFIG_FILE)"' \
+      "$skill_dir/skills" 2>/dev/null | head -5 || true)"
+    if [[ -n "$sourced" ]]; then
+      bad "$base: skill script sources a config file (use allowlist KEY=VALUE parser)"
+    else
+      ok "$base: config loader does not source env files"
+    fi
+  fi
+
   # live suite pairing: if tests/live exists, remind artifacts convention (warn only)
   if [[ -d "$skill_dir/tests/live" ]]; then
     if [[ -d "$skill_dir/artifacts/live" ]]; then
@@ -175,6 +188,16 @@ else
   for t in "${TARGETS[@]}"; do
     check_one "$t"
   done
+fi
+
+# Scaffold contract: new skills must inherit the allowlist parser.
+if [[ -f "$INCUBATOR_ROOT/_template/skills/_your-skill_/scripts/_your-skill_" ]]; then
+  if grep -nE 'source[[:space:]]+"\$file"' \
+    "$INCUBATOR_ROOT/_template/skills/_your-skill_/scripts/_your-skill_" >/dev/null 2>&1; then
+    bad "template: sources config file (\$file) — use allowlist KEY=VALUE parser"
+  else
+    ok "template: config loader does not source env files"
+  fi
 fi
 
 echo

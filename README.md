@@ -35,7 +35,7 @@ composed by an agent: `wechat-mp` can request visuals from `tzai-image`, while
 | Skill product | Version | Type | 说明 | Repo | Install |
 | --- | --- | --- | --- | --- | --- |
 | **`lark-push`** | `1.5.0` | `single` | 飞书/Lark 群推送：完成通知、日报周报、发布摘要 | [kedoupi/lark-push-skill](https://github.com/kedoupi/lark-push-skill) | `npx skills add kedoupi/lark-push-skill` |
-| **`tzai-image`** | `0.7.4` | `family` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `见下` |
+| **`tzai-image`** | `0.7.5` | `family` | TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎 | [kedoupi/tzai-image-skill](https://github.com/kedoupi/tzai-image-skill) | `npx skills add kedoupi/tzai-image-skill -g --all` |
 | **`wechat-mp`** | `0.3.0` | `single` | 微信公众号：写作成稿 + 本地预览；可组合 tzai 配图 / lark 通知；可选草稿箱 | [kedoupi/wechat-mp-skill](https://github.com/kedoupi/wechat-mp-skill) | `npx skills add kedoupi/wechat-mp-skill` |
 <!-- END GENERATED PRODUCT CATALOG -->
 

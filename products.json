@@ -43,8 +43,7 @@
       "entrypoint_version_policy": "lockstep",
       "status": "published",
       "purpose": "TaoziAPI 创作 Agent：自然语言工作流、完整内容/视觉项目与安全生图引擎",
-      "install": "npx skills add kedoupi/tzai-image-skill -g --all",
-      "catalog_install": "见下"
+      "install": "npx skills add kedoupi/tzai-image-skill -g --all"
     },
     {
       "id": "wechat-mp",

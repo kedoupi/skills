@@ -62,6 +62,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ ! "$AUTHOR" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$ ]]; then
+  echo "Invalid --author (GitHub handle): $AUTHOR" >&2
+  exit 2
+fi
+if [[ ! "$OWNER" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$ ]]; then
+  echo "Invalid --owner (GitHub handle): $OWNER" >&2
+  exit 2
+fi
+
 # Normalize package name + repo directory
 if [[ "$RAW" == *-skill ]]; then
   REPO_DIR="$RAW"

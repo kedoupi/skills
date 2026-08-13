@@ -294,7 +294,7 @@ shell profile / global environment.
 
 ### Auto-migrate (once)
 
-On `load` / `doctor` / `init` (before write):
+On `doctor` / `init` only (before write). `load`, `dry-run`, and `which-config` must stay side-effect free:
 
 - If **`~/.config/kedoupi/<name>/config.env` is missing**, and any **legacy config file** exists with content → **copy** that file to the kedoupi path (`chmod 600`), print one stderr line.
 - **Only copy from existing config files** — never rewrite the user's global shell environment.

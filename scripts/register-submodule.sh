@@ -52,6 +52,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Reject path traversal / absolute paths; require kebab-case *-skill
+if [[ "$REPO_DIR" == *"/"* || "$REPO_DIR" == "."* || "$REPO_DIR" == *".."* ]]; then
+  echo "Invalid repo dir (no path separators or ..): $REPO_DIR" >&2
+  exit 2
+fi
+if [[ ! "$REPO_DIR" =~ ^[a-z0-9]+(-[a-z0-9]+)*-skill$ ]]; then
+  echo "Invalid repo dir (expect kebab-case ending in -skill): $REPO_DIR" >&2
+  exit 2
+fi
+if [[ ! "$OWNER" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$ ]]; then
+  echo "Invalid --owner (GitHub handle): $OWNER" >&2
+  exit 2
+fi
+
 cd "$INCUBATOR_ROOT"
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -60,6 +74,15 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 TARGET="${INCUBATOR_ROOT}/${REPO_DIR}"
+# Ensure TARGET stays inside incubator root
+case "$(cd -- "$(dirname -- "$TARGET")" && pwd -P)/$(basename -- "$TARGET")" in
+  "${INCUBATOR_ROOT}/${REPO_DIR}") ;;
+  *)
+    echo "Refusing path outside incubator root: $TARGET" >&2
+    exit 2
+    ;;
+esac
+
 if [[ ! -d "$TARGET" ]]; then
   echo "Missing directory: $TARGET" >&2
   exit 1
@@ -78,7 +101,10 @@ if [[ -z "$URL" ]]; then
   fi
 fi
 
-if git config --file .gitmodules --get-regexp "path" 2>/dev/null | grep -qE " ${REPO_DIR}\$"; then
+if git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null \
+  | awk '{print $2}' \
+  | grep -Fxq -- "$REPO_DIR"
+then
   echo "Already registered in .gitmodules: $REPO_DIR" >&2
   exit 1
 fi
@@ -111,16 +137,20 @@ fi
 
 git submodule add "$URL" "$REPO_DIR"
 
-# Prefer keeping local commits if backup was ahead of remote clone
-# Compare: if backup has commits not in new submodule, warn user
+# Prefer keeping local commits / dirty trees rather than silent data loss
 if [[ -n "$TMP_BACKUP" ]]; then
   BACKUP_HEAD="$(git -C "$TMP_BACKUP" rev-parse HEAD 2>/dev/null || true)"
   NEW_HEAD="$(git -C "$TARGET" rev-parse HEAD 2>/dev/null || true)"
+  BACKUP_DIRTY="$(git -C "$TMP_BACKUP" status --porcelain 2>/dev/null || true)"
   if [[ -n "$BACKUP_HEAD" && -n "$NEW_HEAD" && "$BACKUP_HEAD" != "$NEW_HEAD" ]]; then
     echo "Note: local backup HEAD ($BACKUP_HEAD) != submodule HEAD ($NEW_HEAD)."
     echo "      Backup kept at: $TMP_BACKUP"
     echo "      Inspect and remove backup when satisfied."
     TMP_BACKUP="" # do not auto-restore over submodule
+  elif [[ -n "$BACKUP_DIRTY" ]]; then
+    echo "Note: local backup has uncommitted changes; kept at: $TMP_BACKUP"
+    echo "      Inspect and remove backup when satisfied."
+    TMP_BACKUP=""
   else
     rm -rf "$TMP_BACKUP"
     TMP_BACKUP=""

@@ -48,6 +48,12 @@ Later wins among files; process env / CLI may override for CI.
 
 If kedoupi file missing and a legacy file exists → copy to kedoupi (once), `chmod 600`.
 Source = **config files only**, not shell exports.
+Trigger migrate from **`init` / `doctor` only** — `dry-run` / `which-config` must stay side-effect free.
+
+## Config file parsing
+
+Load with an allowlist `KEY=VALUE` parser — **never** `source` the file as shell.
+Process env / CLI win over files (see Load order).
 
 ## Init
 
